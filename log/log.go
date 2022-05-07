@@ -333,7 +333,7 @@ func pushMsg(msgLogLevel int, msg string, params ...interface{}) {
 	case LOG_MODE_LOCAL:
 		// 本地日志模式下，初始化log只会执行一次
 		initLogOnce.Do(initLog)
-		msgPrefix := fmt.Sprintf("%s 时间:%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], "-", file, line, myFunc)
+		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
 		log.Printf(msgPrefix+msg, params...)
 	}
 }
