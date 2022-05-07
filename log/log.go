@@ -257,36 +257,6 @@ func readAndWriteMsg() {
 	}
 }
 
-func Debug(msg string, params ...interface{}) {
-	msgLogLevel := LOG_LEVEL_DEBUG
-	pushMsg(msgLogLevel, msg, params...)
-}
-
-func Info(msg string, params ...interface{}) {
-	msgLogLevel := LOG_LEVEL_INFO
-	pushMsg(msgLogLevel, msg, params...)
-}
-
-func Warn(msg string, params ...interface{}) {
-	msgLogLevel := LOG_LEVEL_WARNING
-	pushMsg(msgLogLevel, msg, params...)
-}
-
-func Error(msg string, params ...interface{}) {
-	msgLogLevel := LOG_LEVEL_ERROR
-	pushMsg(msgLogLevel, msg, params...)
-}
-
-func Critical(msg string, params ...interface{}) {
-	msgLogLevel := LOG_LEVEL_CRITICAL
-	pushMsg(msgLogLevel, msg, params...)
-}
-
-func Fatal(msg string, params ...interface{}) {
-	msgLogLevel := LOG_LEVEL_FATAL
-	pushMsg(msgLogLevel, msg, params...)
-}
-
 func pushMsg(msgLogLevel int, msg string, params ...interface{}) {
 	// 初始化默认配置(只会执行一次)
 	initDefaultLogConfigOnce.Do(initDefaultLogConfig)
