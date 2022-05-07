@@ -1,3 +1,13 @@
+/*
+   Copyright (c) 2022 zhaochun
+   gitee.com/zhaochuninhefei/zcgolog is licensed under Mulan PSL v2.
+   You can use this software according to the terms and conditions of the Mulan PSL v2.
+   You may obtain a copy of Mulan PSL v2 at:
+            http://license.coscl.org.cn/MulanPSL2
+   THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+   See the Mulan PSL v2 for more details.
+*/
+
 package log
 
 import (
@@ -9,9 +19,9 @@ import (
 )
 
 func TestFirstLog(t *testing.T) {
-	logConfig := DefaultLogConfig()
-	logConfig.LogFileDir = "testdata/firstlog/"
-	logFileName, _, err := GetLogFilePath(logConfig)
+	initDefaultLogConfig()
+	zcgologConfig.LogFileDir = "testdata/firstlog/"
+	logFileName, _, err := GetLogFilePath(zcgologConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,10 +47,10 @@ func TestLastLog(t *testing.T) {
 	fileState, _ := os.Stat(logLast)
 	fmt.Printf("logLast文件大小: %d\n", fileState.Size())
 
-	logConfig := DefaultLogConfig()
-	logConfig.LogFileDir = "testdata/lastlog/"
-	logConfig.LogFileMaxSizeM = 1
-	logFileName, _, err := GetLogFilePath(logConfig)
+	initDefaultLogConfig()
+	zcgologConfig.LogFileDir = "testdata/lastlog/"
+	zcgologConfig.LogFileMaxSizeM = 1
+	logFileName, _, err := GetLogFilePath(zcgologConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
