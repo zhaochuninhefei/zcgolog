@@ -59,6 +59,18 @@ func initZcgolog() {
 
 其他相关配置的默认值参考`配置默认值`一节。
 
+服务器模式下日志输出格式:
+```
+写入文件时间 日志级别 日志输出请求时间 代码位置(输出该条日志的代码文件及行数) 函数包路径 日志内容  
+```
+> 因为是异步输出，所以有两个时间戳。前者是实际写入日志文件的时间，后者是调用方请求写日志的时间。
+
+示例如下:
+```
+2022/05/07 16:56:39 [   DEBUG] 时间:2022-05-07 16:56:39 代码:/home/zhaochun/work/sources/gitee.com/zhaochuninhefei/zcgolog/log/log_test.go 56 函数:gitee.com/zhaochuninhefei/zcgolog/log.writeLog 测试日志
+```
+
+
 ### 服务器模式下在线修改指定函数的日志级别
 zcgolog在服务器模式下提供了在线修改日志级别的httpAPI，无需重启服务。以`curl`为例，使用方法如下:
 
@@ -76,6 +88,16 @@ curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhef
 
 ## 本地模式
 本地模式无需额外配置，当然也支持自定义配置，方法与服务器模式一样，注意`LogMod`采用默认值，或配置为`log.LOG_MODE_LOCAL`。
+
+本地模式下日志输出格式:
+```
+写入文件时间 日志级别 代码位置(输出该条日志的代码文件及行数) 函数包路径 日志内容  
+```
+
+示例如下:
+```
+2022/05/07 16:57:31 [   DEBUG] 代码:/home/zhaochun/work/sources/gitee.com/zhaochuninhefei/zcgolog/log/log_test.go 82 函数:gitee.com/zhaochuninhefei/zcgolog/log.TestLocalLog 测试日志
+```
 
 ## 配置默认值
 各个配置的默认值如下:
