@@ -112,4 +112,6 @@ curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhef
 - LogLevelCtlHost : `localhost`，日志级别调整监听服务的Host，一般不用调整。仅在服务器模式下支持。
 - LogLevelCtlPort ： `9300`，日志级别调整监听服务的端口，可根据实际情况调整。仅在服务器模式下支持。
 
+# 其他说明
+底层写日志时，直接使用的golang自己的`log`包，因此zcgolog的配置会影响程序中其他使用golang的log包的日志输出，包括其输出目标会被改为同时输出到控制台和zcgolog配置的日志文件，以及其前缀时间戳格式。
 
