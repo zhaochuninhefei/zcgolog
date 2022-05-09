@@ -20,6 +20,10 @@ import (
 	"strings"
 )
 
+const (
+	LOG_TIME_FORMAT_YMDHMS = "2006-01-02 15:04:05"
+)
+
 // 获取当前用户Home目录
 func Home() (string, error) {
 	// 优先使用当前系统用户的Home目录

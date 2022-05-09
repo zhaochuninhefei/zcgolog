@@ -2,14 +2,14 @@ zcgolog
 ==========
 
 # 介绍
-一个简单的golang日志框架，支持服务器模式和本地模式。其中服务器日志提供了以下功能:
+一个简单的golang日志框架，支持服务器模式和本地模式，底层仍然使用golang的`log`包，在其基础上提供了以下功能:
 - 在线修改具体函数的日志级别(仅在服务器模式下支持)
 - 日志异步输出(仅在服务器模式下支持)
 - 日志滚动，按天滚动，当天文件按配置的size滚动(仅在服务器模式下支持)
 - 日志同时输出到文件与控制台
 - 日志输出代码文件路径，代码行数，以及调用方函数包路径信息
 
-本地模式与golang自己的`log`包基本相同，不具备日志级别在线修改、异步输出、文件滚动功能。
+本地模式与golang的`log`包基本相同，不具备日志级别在线修改、异步输出、文件滚动功能。
 
 # 使用
 zcgolog的使用很简单，直接依赖即可使用，默认使用本地模式，如果要使用服务器模式，只需要在代码中添加zcgolog的配置与初始化即可。
@@ -109,8 +109,30 @@ curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhef
 - LogMod : `LOG_MODE_LOCAL`,int类型，值为1,目前支持 LOG_MODE_LOCAL:1 与 LOG_MODE_SERVER:2。
 - LogChannelCap : `4096`,int类型，日志缓冲通道的容量，可以根据实际情况调整。仅在服务器模式下支持。
 - LogChnOverPolicy : `LOG_CHN_OVER_POLICY_DISCARD`,int类型，值为1。日志缓冲通道已满时的日志处理策略，默认策略是丢弃该条日志，另一个策略是`LOG_CHN_OVER_POLICY_BLOCK`，阻塞等待。两种策略都不是很理想，一般还是调大LogChannelCap确保通道不会被打满。仅在服务器模式下支持。
-- LogLevelCtlHost : `localhost`，日志级别调整监听服务的Host，一般不用调整。仅在服务器模式下支持。
+- LogLevelCtlHost : `localhost`，日志级别调整监听服务的Host，可根据实际情况调整。仅在服务器模式下支持。
 - LogLevelCtlPort ： `9300`，日志级别调整监听服务的端口，可根据实际情况调整。仅在服务器模式下支持。
+
+# zcgolog性能基准测试
+针对zcgolog的服务器模式，本地模式，以及golang原生`log`包做了性能基准测试。代码:`benchtest/log_benchmark_test.go`
+
+zcgolog服务器模式的性能表现最好，相比直接使用golang原生`log`包，性能大约提升了一倍。
+> 因为服务器模式采用了异步输出。
+
+zcgolog本地模式性能表现最差，相比直接使用golang原生`log`包，性能下降了约一倍。
+> 因为本地模式与golang原生`log`包一样是同步输出日志，同时每次输出日志时有一些额外操作，比如获取runtime代码文件位置以及包路径等。
+
+具体数据如下:
+
+```
+goos: linux
+goarch: amd64
+pkg: gitee.com/zhaochuninhefei/zcgolog/benchtest
+cpu: 12th Gen Intel(R) Core(TM) i7-12700H
+BenchmarkLogServer-20    	 1854706	       618.0 ns/op	     473 B/op	       6 allocs/op
+BenchmarkLogLocal-20     	  574923	      2131 ns/op	     911 B/op	       9 allocs/op
+BenchmarkLogGolang-20    	 1000000	      1126 ns/op	      39 B/op	       1 allocs/op
+```
+> BenchmarkLogServer是服务器模式，BenchmarkLogLocal是本地模式，BenchmarkLogGolang是直接使用golang原生log包。
 
 # 其他说明
 底层写日志时，直接使用的golang自己的`log`包，因此zcgolog的配置会影响程序中其他使用golang的log包的日志输出，包括:其输出目标会被改为同时输出到控制台和zcgolog配置的日志文件，其前缀时间戳格式会被改为`log.SetFlags(log.Ldate | log.Ltime)`。
