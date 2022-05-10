@@ -25,23 +25,30 @@ import (
 
 // 日志级别定义
 const (
+	// debug 调试日志，生产环境通常关闭
 	LOG_LEVEL_DEBUG = iota + 1
+	// info 重要信息日志，用于提示程序过程中的一些重要信息，慎用，避免过多的INFO日志
 	LOG_LEVEL_INFO
+	// warning 警告日志，用于警告用户可能会发生问题
 	LOG_LEVEL_WARNING
+	// error 一般错误日志，一般用于提示业务错误，程序通常不会因为这样的错误终止
 	LOG_LEVEL_ERROR
-	LOG_LEVEL_CRITICAL
+	// panic 异常错误日志，一般用于预期外的错误，程序的当前Goroutine会终止并输出堆栈信息
+	LOG_LEVEL_PANIC
+	// fatal 致命错误日志，程序会马上终止
 	LOG_LEVEL_FATAL
+	// 日志级别最大值，用于内部判断日志级别是否在合法范围内
 	log_level_max
 )
 
 // 日志级别文字定义
 var LogLevels = [...]string{
-	LOG_LEVEL_DEBUG:    "[   DEBUG]",
-	LOG_LEVEL_INFO:     "[    INFO]",
-	LOG_LEVEL_WARNING:  "[ WARNING]",
-	LOG_LEVEL_ERROR:    "[   ERROR]",
-	LOG_LEVEL_CRITICAL: "[CRITICAL]",
-	LOG_LEVEL_FATAL:    "[   FATAL]",
+	LOG_LEVEL_DEBUG:   "[DEBUG]",
+	LOG_LEVEL_INFO:    "[ INFO]",
+	LOG_LEVEL_WARNING: "[ WARN]",
+	LOG_LEVEL_ERROR:   "[ERROR]",
+	LOG_LEVEL_PANIC:   "[PANIC]",
+	LOG_LEVEL_FATAL:   "[FATAL]",
 }
 
 // 日志缓冲通道填满后处理策略定义
@@ -108,6 +115,7 @@ func CheckConfig(logConfig *Config) (bool, error) {
 	return true, nil
 }
 
+// 日志消息，日志缓冲通道用
 type logMsg struct {
 	// 发生时间
 	pushTime time.Time
@@ -131,7 +139,8 @@ var zcgologConfig *Config
 // 日志缓冲通道
 var logMsgChn chan logMsg
 
-// 退出通道
+// 退出通道,用于监听是否需要退出对日志缓冲通道的监听。
+// 服务器模式下刷新日志配置重启服务器模式前，需要先通过该通道，通知当前对日志缓冲通道的监听服务退出。
 var quitChn = make(chan int)
 
 // 当前日志文件
@@ -174,7 +183,7 @@ func configGolangLog() {
 		currentLogFile.Close()
 	}
 	// 获取日志文件
-	logFilePath, todayYMD, err := GetLogFilePath(zcgologConfig)
+	logFilePath, todayYMD, err := GetLogFilePathAndYMDToday(zcgologConfig)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -239,38 +248,42 @@ func InitLogger(initConfig *Config) {
 	switch zcgologConfig.LogMod {
 	case LOG_MODE_SERVER:
 		// fmt.Println("LOG_MODE_SERVER zcgologConfig.LogMod:", zcgologConfig.LogMod)
-		//
+		// 重启zcgolog服务器模式
 		restartZcgologServer()
-		// 启动日志级别控制监听服务
-		runLogCtlServeOnce.Do(startLogCtlServe)
 	case LOG_MODE_LOCAL:
 		// fmt.Println("LOG_MODE_LOCAL zcgologConfig.LogMod:", zcgologConfig.LogMod)
 		// 本地日志模式下，初始化log只执行一次
-		// 但本地模式一般不会调用InitLogger，因此需要在具体调用日志输出函数时再执行一次 initLogOnce.Do(initLog)
+		// 但本地模式可能不会调用InitLogger，因此需要在首次调用日志输出函数时执行一次 configGolangLogOnce.Do(configGolangLog)
 		configGolangLogOnce.Do(configGolangLog)
 	}
 }
 
 // 重启zcgolog服务器模式
 func restartZcgologServer() {
-	if msgReaderRunning {
-		// 请求停止日志缓冲通道监听
-		QuitMsgReader()
-	}
+	// 请求停止日志缓冲通道监听
+	QuitMsgReader()
 	// 根据最新的zcgologConfig配置golang的log
 	configGolangLog()
 	// 启动日志缓冲通道监听
-	startMsgReader()
+	go readAndWriteMsg()
+	// 等待3秒再启动日志级别控制监听服务，
+	// 防止runLogCtlServe执行时日志缓冲通道尚未初始化。
+	time.Sleep(3 * time.Second)
+	// 启动日志级别控制监听服务
+	runLogCtlServeOnce.Do(startLogCtlServe)
 }
 
-func startMsgReader() {
-	go readAndWriteMsg()
+// 请求停止对缓冲消息通道的监听
+func QuitMsgReader() {
+	if msgReaderRunning {
+		quitChn <- 1
+	}
 }
 
 var msgReaderLock sync.Mutex
 var msgReaderRunning bool = false
 
-// 从日志缓冲队列拉取并输出日志
+// 从日志缓冲通道拉取并输出日志
 func readAndWriteMsg() {
 	// 通过排他锁控制同时只能有一个Goroutine执行该函数
 	msgReaderLock.Lock()
@@ -281,18 +294,22 @@ func readAndWriteMsg() {
 	msgReaderRunning = true
 	defer currentLogFile.Close()
 	for {
+		// select IO多路复用 监听日志缓冲通道和退出通道
 		select {
 		case <-quitChn:
+			// 接收到退出指令
 			msgReaderRunning = false
 			log.Println("readAndWriteMsg结束")
 			return
 		case msg := <-logMsgChn:
+			// 接收到日志消息
 			// 检查日志文件是否需要滚动
 			curLogFileStat, _ := currentLogFile.Stat()
 			todayYMD := getYMDToday()
+			// 当天日期发生变化或当前日志文件大小超过上限时，做日志文件滚动处理
 			if todayYMD != currentLogYMD || curLogFileStat.Size() >= int64(zcgologConfig.LogFileMaxSizeM)*1024*1024 {
 				currentLogFile.Close()
-				logFilePath, ymd, err := GetLogFilePath(zcgologConfig)
+				logFilePath, ymd, err := GetLogFilePathAndYMDToday(zcgologConfig)
 				if err != nil {
 					fmt.Printf("log/log.go readAndWriteMsg->GetLogFilePath 发生错误: %s\n", err)
 					continue
@@ -319,13 +336,25 @@ func readAndWriteMsg() {
 	}
 }
 
-func pushMsg(msgLogLevel int, msg string, params ...interface{}) {
+// 输出日志
+func outputLog(msgLogLevel int, msg string, params ...interface{}) {
 	// 初始化默认配置(只会执行一次)
 	initDefaultLogConfigOnce.Do(initDefaultLogConfig)
 	// 获取调用堆栈信息
 	pc, file, line, _ := runtime.Caller(2)
 	// 调用处函数包路径
 	myFunc := runtime.FuncForPC(pc).Name()
+	// Panic与Fatal直接调用log包处理
+	if msgLogLevel == LOG_LEVEL_PANIC {
+		configGolangLogOnce.Do(configGolangLog)
+		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
+		log.Panicf(msgPrefix+msg, params...)
+	}
+	if msgLogLevel == LOG_LEVEL_FATAL {
+		configGolangLogOnce.Do(configGolangLog)
+		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
+		log.Fatalf(msgPrefix+msg, params...)
+	}
 	// fmt.Printf("myFunc: %s\n", myFunc)
 	// 获取函数对应的日志级别
 	myLevel := logLevelCtl[myFunc]
@@ -353,8 +382,11 @@ func pushMsg(msgLogLevel int, msg string, params ...interface{}) {
 			// 根据LogChnOverPolicy决定是否在缓冲通道已满时阻塞
 			switch zcgologConfig.LogChnOverPolicy {
 			case LOG_CHN_OVER_POLICY_BLOCK:
+				// 阻塞模式下，如果缓冲通道已满，则当前goroutine将在此阻塞等待，
+				// 直到下游readAndWriteMsg的goroutine将消息拉走，缓冲通道有空间空出来。
 				logMsgChn <- pushMsg
 			case LOG_CHN_OVER_POLICY_DISCARD:
+				// 丢弃模式下，如果缓冲通道已满，则进入select的default分支，丢弃该条日志。
 				select {
 				case logMsgChn <- pushMsg:
 					return
@@ -362,9 +394,10 @@ func pushMsg(msgLogLevel int, msg string, params ...interface{}) {
 					fmt.Printf("日志缓冲通道已满，该条日志被丢弃:"+msg+"\n", params...)
 					return
 				}
+				// TODO 考虑是否添加新的策略，比如将日志直接输出到fallback的输出流?
 			}
 		} else {
-			// 服务器模式下日志缓冲通道监听服务已停止，改为本地模式输出日志
+			// 服务器模式下日志缓冲通道监听服务已停止时，改为本地模式输出日志
 			configGolangLogOnce.Do(configGolangLog)
 			msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
 			log.Printf(msgPrefix+msg, params...)
@@ -375,11 +408,6 @@ func pushMsg(msgLogLevel int, msg string, params ...interface{}) {
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
 		log.Printf(msgPrefix+msg, params...)
 	}
-}
-
-// 请求停止对缓冲消息通道的监听
-func QuitMsgReader() {
-	quitChn <- 1
 }
 
 // DEBUG日志输出控制
@@ -417,12 +445,11 @@ func handleLogLevelCtl(w http.ResponseWriter, req *http.Request) {
 func runLogCtlServe() {
 	listenAddress := zcgologConfig.LogLevelCtlHost + ":" + zcgologConfig.LogLevelCtlPort
 	http.HandleFunc("/zcgolog/api/level/ctl", handleLogLevelCtl)
-	Info("启动监听: http://%s/zcgolog/api/level/ctl", listenAddress)
+	Infof("启动监听: http://%s/zcgolog/api/level/ctl", listenAddress)
 	log.Fatal(http.ListenAndServe(listenAddress, nil))
 }
 
+// 异步启动日志级别控制监听服务
 func startLogCtlServe() {
-	// 等待3秒再启动日志级别控制监听服务
-	time.Sleep(3 * time.Second)
 	go runLogCtlServe()
 }

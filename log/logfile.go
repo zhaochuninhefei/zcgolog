@@ -25,7 +25,7 @@ import (
 //  存在当天对应日志文件时，获取最新的日志文件；
 //  最新日志文件大小超过配置的日志文件大小上限时，创建新的日志文件。
 //  每天的日志文件数量不能超过99999，否则会报错。
-func GetLogFilePath(logConfig *Config) (string, string, error) {
+func GetLogFilePathAndYMDToday(logConfig *Config) (string, string, error) {
 	// 检查日志配置
 	_, err := CheckConfig(logConfig)
 	if err != nil {

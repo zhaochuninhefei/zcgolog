@@ -67,7 +67,7 @@ func initZcgolog() {
 
 示例如下:
 ```
-2022/05/07 16:56:39 [   DEBUG] 时间:2022-05-07 16:56:39 代码:/home/zhaochun/work/sources/gitee.com/zhaochuninhefei/zcgolog/log/log_test.go 56 函数:gitee.com/zhaochuninhefei/zcgolog/log.writeLog 测试日志
+2022/05/07 16:56:39 [DEBUG] 时间:2022-05-07 16:56:39 代码:/home/zhaochun/work/sources/gitee.com/zhaochuninhefei/zcgolog/log/log_test.go 56 函数:gitee.com/zhaochuninhefei/zcgolog/log.writeLog 测试日志
 ```
 
 
@@ -81,7 +81,7 @@ curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhef
 说明:
 - host与port : 根据配置确定，默认是`localhost:9300`
 - uri : `/zcgolog/api/level/ctl`
-- URL参数 : logger和level。logger是调整目标，对应具体函数的完整包名路径，如: `gitee.com/zhaochuninhefei/zcgolog/log.writeLog`；level是调整后的日志级别，支持从1到6，分别是DEBUG,INFO,WARNNING,ERROR,CRITICAL,FATAL。
+- URL参数 : logger和level。logger是调整目标，对应具体函数的完整包名路径，如: `gitee.com/zhaochuninhefei/zcgolog/log.writeLog`；level是调整后的日志级别，支持从1到6，分别是DEBUG,INFO,WARNNING,ERROR,PANIC,FATAL。
 
 修改成功后会返回消息:`操作成功`。
 
@@ -96,7 +96,7 @@ curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhef
 
 示例如下:
 ```
-2022/05/07 16:57:31 [   DEBUG] 代码:/home/zhaochun/work/sources/gitee.com/zhaochuninhefei/zcgolog/log/log_test.go 82 函数:gitee.com/zhaochuninhefei/zcgolog/log.TestLocalLog 测试日志
+2022/05/07 16:57:31 [DEBUG] 代码:/home/zhaochun/work/sources/gitee.com/zhaochuninhefei/zcgolog/log/log_test.go 82 函数:gitee.com/zhaochuninhefei/zcgolog/log.TestLocalLog 测试日志
 ```
 
 ## 配置默认值
@@ -104,13 +104,56 @@ curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhef
 - LogFileDir : 当前用户Home目录/zcgologs，即 `~/zcgologs`
 - LogFileNamePrefix : `zcgolog`，日志文件命名约定: `[LogFileNamePrefix]_[年月日]_[%05d].log`，例如: `zcgolog_20220507_00001.log`
 - LogFileMaxSizeM : `2`，单个日志文件最大Size，在服务器模式下，日志文件以天为单位滚动，当天日志文件到达上限时再次滚动，文件名最后的序号+1。每天最多允许滚动99999个日志文件。本地模式不支持日志滚动。
-- LogLevelGlobal : `LOG_LEVEL_DEBUG`,int类型，值为1。目前支持的日志级别:LOG_LEVEL_DEBUG,LOG_LEVEL_INFO,LOG_LEVEL_WARNING,LOG_LEVEL_ERROR,LOG_LEVEL_CRITICAL,LOG_LEVEL_FATAL,对应的数值从1到6。
+- LogLevelGlobal : `LOG_LEVEL_DEBUG`,int类型，值为1。目前支持的日志级别:LOG_LEVEL_DEBUG,LOG_LEVEL_INFO,LOG_LEVEL_WARNING,LOG_LEVEL_ERROR,LOG_LEVEL_PANIC,LOG_LEVEL_FATAL,对应的数值从1到6。
 - LogLineFormat : "%level %pushTime %file %line %callFunc %msg"，目前日志格式固定，该配置暂时没有使用。
 - LogMod : `LOG_MODE_LOCAL`,int类型，值为1,目前支持 LOG_MODE_LOCAL:1 与 LOG_MODE_SERVER:2。
 - LogChannelCap : `4096`,int类型，日志缓冲通道的容量，可以根据实际情况调整。仅在服务器模式下支持。
-- LogChnOverPolicy : `LOG_CHN_OVER_POLICY_DISCARD`,int类型，值为1。日志缓冲通道已满时的日志处理策略，默认策略是丢弃该条日志，另一个策略是`LOG_CHN_OVER_POLICY_BLOCK`，阻塞等待。两种策略都不是很理想，一般还是调大LogChannelCap确保通道不会被打满。仅在服务器模式下支持。
+- LogChnOverPolicy : `LOG_CHN_OVER_POLICY_DISCARD`,int类型，值为1。日志缓冲通道已满时的日志处理策略，默认策略是丢弃该条日志(但会输出到控制台)，另一个策略是`LOG_CHN_OVER_POLICY_BLOCK`，阻塞等待。两种策略都不是很理想，一般还是调大LogChannelCap确保通道不会被打满。仅在服务器模式下支持。以后考虑添加新的策略，例如直接输出到fallback的输出流。
 - LogLevelCtlHost : `localhost`，日志级别调整监听服务的Host，可根据实际情况调整。仅在服务器模式下支持。
 - LogLevelCtlPort ： `9300`，日志级别调整监听服务的端口，可根据实际情况调整。仅在服务器模式下支持。
+
+## 支持的日志级别
+```go
+	// debug 调试日志，生产环境通常关闭
+	LOG_LEVEL_DEBUG = 1
+	// info 重要信息日志，用于提示程序过程中的一些重要信息，慎用，避免过多的INFO日志
+	LOG_LEVEL_INFO = 2
+	// warning 警告日志，用于警告用户可能会发生问题
+	LOG_LEVEL_WARNING = 3
+	// error 一般错误日志，一般用于提示业务错误，程序通常不会因为这样的错误终止
+	LOG_LEVEL_ERROR = 4
+	// panic 异常错误日志，一般用于预期外的错误，程序的当前Goroutine会终止并输出堆栈信息
+	LOG_LEVEL_PANIC = 5
+	// fatal 致命错误日志，程序会马上终止
+	LOG_LEVEL_FATAL = 6
+```
+
+## 日志输出调用接口
+
+| 函数名 | 日志级别 | 参数列表 | 说明 |
+| --- | --- | --- | --- |
+| Print | LOG_LEVEL_DEBUG | v ...interface{} | Print在zcgolog中处理为与Debug一致 |
+| Printf | LOG_LEVEL_DEBUG | msg string, params ...interface{} | Printf在zcgolog中处理为与Debugf一致 |
+| Println | LOG_LEVEL_DEBUG | v ...interface{} | Println在zcgolog中处理为与Debugln一致 |
+| Debug | LOG_LEVEL_DEBUG | v ...interface{} | 参数直接拼接，末尾换行 |
+| Debugf | LOG_LEVEL_DEBUG | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
+| Debugln | LOG_LEVEL_DEBUG | v ...interface{} | 参数直接拼接，末尾换行 |
+| Info | LOG_LEVEL_INFO | v ...interface{} | 参数直接拼接，末尾换行 |
+| Infof | LOG_LEVEL_INFO | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
+| Infoln | LOG_LEVEL_INFO | v ...interface{} | 参数直接拼接，末尾换行 |
+| Warn | LOG_LEVEL_WARNING | v ...interface{} | 参数直接拼接，末尾换行 |
+| Warnf | LOG_LEVEL_WARNING | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
+| Warnln | LOG_LEVEL_WARNING | v ...interface{} | 参数直接拼接，末尾换行 |
+| Error | LOG_LEVEL_ERROR | v ...interface{} | 参数直接拼接，末尾换行 |
+| Errorf | LOG_LEVEL_ERROR | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
+| Errorln | LOG_LEVEL_ERROR | v ...interface{} | 参数直接拼接，末尾换行 |
+| Panic | LOG_LEVEL_PANIC | v ...interface{} | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止当前goroutine |
+| Panicf | LOG_LEVEL_PANIC | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，无视服务器模式直接输出日志并终止当前goroutine |
+| Panicln | LOG_LEVEL_PANIC | v ...interface{} | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止当前goroutine |
+| Fatal | LOG_LEVEL_FATAL | v ...interface{} | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止程序 |
+| Fatalf | LOG_LEVEL_FATAL | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，无视服务器模式直接输出日志并终止程序 |
+| Fatalln | LOG_LEVEL_FATAL | v ...interface{} | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止程序 |
+
 
 # zcgolog性能基准测试
 针对zcgolog的服务器模式，本地模式，以及golang原生`log`包做了性能基准测试。代码:`benchtest/log_benchmark_test.go`

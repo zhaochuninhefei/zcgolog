@@ -21,7 +21,7 @@ import (
 func TestFirstLog(t *testing.T) {
 	initDefaultLogConfig()
 	zcgologConfig.LogFileDir = "testdata/firstlog/"
-	logFileName, _, err := GetLogFilePath(zcgologConfig)
+	logFileName, _, err := GetLogFilePathAndYMDToday(zcgologConfig)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -50,7 +50,7 @@ func TestLastLog(t *testing.T) {
 	initDefaultLogConfig()
 	zcgologConfig.LogFileDir = "testdata/lastlog/"
 	zcgologConfig.LogFileMaxSizeM = 1
-	logFileName, _, err := GetLogFilePath(zcgologConfig)
+	logFileName, _, err := GetLogFilePathAndYMDToday(zcgologConfig)
 	if err != nil {
 		t.Fatal(err)
 	}

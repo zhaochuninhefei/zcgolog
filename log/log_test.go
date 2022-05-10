@@ -56,7 +56,38 @@ func writeLog() {
 				fmt.Printf("请求zcgolog/level/ctl返回: %v\n", resp)
 			}
 		}
-		Debug("测试写入日志: %d", i+1)
+		switch (i + 1) % 15 {
+		case 0:
+			Print("测试写入日志", i+1)
+		case 1:
+			Printf("测试写入日志: %d", i+1)
+		case 2:
+			Println("测试写入日志", i+1)
+		case 3:
+			Debug("测试写入日志", i+1)
+		case 4:
+			Debugf("测试写入日志: %d", i+1)
+		case 5:
+			Debugln("测试写入日志", i+1)
+		case 6:
+			Info("测试写入日志", i+1)
+		case 7:
+			Infof("测试写入日志: %d", i+1)
+		case 8:
+			Infoln("测试写入日志", i+1)
+		case 9:
+			Warn("测试写入日志", i+1)
+		case 10:
+			Warnf("测试写入日志: %d", i+1)
+		case 11:
+			Warnln("测试写入日志", i+1)
+		case 12:
+			Error("测试写入日志", i+1)
+		case 13:
+			Errorf("测试写入日志: %d", i+1)
+		case 14:
+			Errorln("测试写入日志", i+1)
+		}
 	}
 	end <- true
 }
@@ -81,7 +112,7 @@ func TestServerLogScroll(t *testing.T) {
 
 func writeLog10000() {
 	for i := 0; i < 10000; i++ {
-		Debug("测试写入日志writeLog10000writeLog10000writeLog10000writeLog10000writeLog10000: %d", i+1)
+		Debugf("测试写入日志writeLog10000writeLog10000writeLog10000writeLog10000writeLog10000: %d", i+1)
 	}
 	for {
 		if len(logMsgChn) == 0 {
@@ -103,7 +134,7 @@ func TestLocalLogDefault(t *testing.T) {
 			}
 			InitLogger(logConfig)
 		}
-		Debug("测试写入日志: %d", i+1)
+		Debugf("测试写入日志: %d", i+1)
 	}
 }
 
@@ -117,7 +148,7 @@ func TestLocalLog(t *testing.T) {
 	}
 	InitLogger(logConfig)
 	for i := 0; i < 100; i++ {
-		Debug("测试写入日志: %d", i+1)
+		Debugf("测试写入日志: %d", i+1)
 	}
 }
 

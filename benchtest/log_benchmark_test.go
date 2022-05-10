@@ -26,20 +26,20 @@ func TestMain(m *testing.M) {
 }
 
 func BenchmarkLogServer(b *testing.B) {
-	setupServerOnce.Do(configServer)
+	setupServerOnce.Do(setupServer)
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		zlog.Debug("测试写入日志: %d", i+1)
+		zlog.Debugf("测试写入日志: %d", i+1)
 	}
 }
 
 func BenchmarkLogLocal(b *testing.B) {
-	setupLocalOnce.Do(configLocal)
+	setupLocalOnce.Do(setupLocal)
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		zlog.Debug("测试写入日志: %d", i+1)
+		zlog.Debugf("测试写入日志: %d", i+1)
 	}
 }
 
@@ -54,7 +54,8 @@ func BenchmarkLogGolang(b *testing.B) {
 
 var setupServerOnce sync.Once
 
-func configServer() {
+func setupServer() {
+	zlog.QuitMsgReader()
 	logConfig := &zlog.Config{
 		LogForbidStdout:  true,
 		LogFileDir:       "testdata",
@@ -71,7 +72,7 @@ func configServer() {
 
 var setupLocalOnce sync.Once
 
-func configLocal() {
+func setupLocal() {
 	// fmt.Println("===== configLocal")
 	zlog.QuitMsgReader()
 	// time.Sleep(3 * time.Second)
@@ -98,4 +99,8 @@ func setupGolang() {
 	// 日志前缀时间戳格式
 	log.SetFlags(log.Ldate | log.Ltime)
 	log.Println("准备测试日志文件")
+}
+
+func TestClearLogs(t *testing.T) {
+	zlog.ClearDir("testdata")
 }
