@@ -16,7 +16,7 @@ zcgolog的使用很简单，直接依赖即可使用，默认使用本地模式�
 
 依赖zcgolog，在相关工程的`go.mod`文件中添加:
 ```
-gitee.com/zhaochuninhefei/zcgolog v0.0.4
+gitee.com/zhaochuninhefei/zcgolog v0.0.5
 ```
 
 并在对应的代码中使用:
