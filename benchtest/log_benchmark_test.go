@@ -55,7 +55,7 @@ func BenchmarkLogGolang(b *testing.B) {
 var setupServerOnce sync.Once
 
 func setupServer() {
-	zlog.QuitMsgReader()
+	zlog.ClearDir("testdata")
 	logConfig := &zlog.Config{
 		LogForbidStdout:  true,
 		LogFileDir:       "testdata",
@@ -73,16 +73,13 @@ func setupServer() {
 var setupLocalOnce sync.Once
 
 func setupLocal() {
-	// fmt.Println("===== configLocal")
-	zlog.QuitMsgReader()
-	// time.Sleep(3 * time.Second)
+	zlog.ClearDir("testdata")
 	logConfig := &zlog.Config{
 		LogForbidStdout: true,
 		LogFileDir:      "testdata",
 		LogMod:          zlog.LOG_MODE_LOCAL,
 		LogLevelGlobal:  zlog.LOG_LEVEL_DEBUG,
 	}
-	// fmt.Printf("===== logConfig.LogMod: %d\n", logConfig.LogMod)
 	zlog.InitLogger(logConfig)
 	time.Sleep(3 * time.Second)
 	zlog.Debug("准备测试日志文件")
@@ -91,6 +88,7 @@ func setupLocal() {
 var setupGolangrOnce sync.Once
 
 func setupGolang() {
+	zlog.ClearDir("testdata")
 	currentLogFile, err := os.OpenFile("testdata/test.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)

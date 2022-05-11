@@ -20,16 +20,25 @@ import (
 	"time"
 )
 
+const (
+	OS_OUT_STDOUT = "OS.STDOUT"
+)
+
 // 获取日志文件路径和当天年月日。
 //  不存在当天对应日志文件时，创建新的日志文件；
 //  存在当天对应日志文件时，获取最新的日志文件；
 //  最新日志文件大小超过配置的日志文件大小上限时，创建新的日志文件。
 //  每天的日志文件数量不能超过99999，否则会报错。
+//  本地模式下，如果LogFileDir为空，则返回 ("OS.STDOUT", 当天日期, nil)表示只能输出到控制台。
 func GetLogFilePathAndYMDToday(logConfig *Config) (string, string, error) {
 	// 检查日志配置
-	_, err := CheckConfig(logConfig)
+	res, err := CheckConfig(logConfig)
 	if err != nil {
 		return "", "", err
+	}
+	// 检查通过但没有LogFileDir，此时只能输出到控制台
+	if res == CONFIG_CHECK_RESULT_NOFILEDIR {
+		return OS_OUT_STDOUT, getYMDToday(), nil
 	}
 	// 读取日志目录下所有文件
 	files, err := ioutil.ReadDir(logConfig.LogFileDir)

@@ -13,6 +13,7 @@ package log
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"os/user"
@@ -21,7 +22,10 @@ import (
 )
 
 const (
-	LOG_TIME_FORMAT_YMDHMS = "2006-01-02 15:04:05"
+	LOG_TIME_FORMAT_YMDHMS        = "2006-01-02 15:04:05"
+	CONFIG_CHECK_RESULT_NG        = -1
+	CONFIG_CHECK_RESULT_OK        = 1
+	CONFIG_CHECK_RESULT_NOFILEDIR = 2
 )
 
 // 获取当前用户Home目录
@@ -66,4 +70,31 @@ func homeWindows() (string, error) {
 		return "", errors.New("无法获取当前用户Home目录(windows)")
 	}
 	return home, nil
+}
+
+// 检查日志配置
+//  返回 1 代表检查OK, error为nil;
+//  返回 2 代表检查OK但LogFileDir为空，error为nil;
+//  返回 -9 代表检查失败，error非nil;
+func CheckConfig(logConfig *Config) (int, error) {
+	if logConfig == nil {
+		return CONFIG_CHECK_RESULT_NG, fmt.Errorf("日志配置不可为空")
+	}
+	if logConfig.LogFileNamePrefix == "" {
+		return CONFIG_CHECK_RESULT_NG, fmt.Errorf("日志文件名前缀不可为空")
+	}
+	if logConfig.LogFileMaxSizeM <= 0 {
+		return CONFIG_CHECK_RESULT_NG, fmt.Errorf("日志文件Size上限必须大于0")
+	}
+	if logConfig.LogLevelGlobal < LOG_LEVEL_DEBUG || logConfig.LogLevelGlobal >= log_level_max {
+		return CONFIG_CHECK_RESULT_NG, fmt.Errorf("全局日志级别不能超出有效范围")
+	}
+	// LogFileDir在本地模式下可以为空，服务器模式下不可为空
+	if logConfig.LogMod == LOG_MODE_SERVER && logConfig.LogFileDir == "" {
+		return CONFIG_CHECK_RESULT_NG, fmt.Errorf("服务器模式下日志目录不可为空")
+	}
+	if logConfig.LogMod == LOG_MODE_LOCAL && logConfig.LogFileDir == "" {
+		return CONFIG_CHECK_RESULT_NOFILEDIR, nil
+	}
+	return CONFIG_CHECK_RESULT_OK, nil
 }

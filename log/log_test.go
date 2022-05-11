@@ -13,7 +13,6 @@ package log
 import (
 	"fmt"
 	"net/http"
-	"path"
 	"testing"
 	"time"
 )
@@ -93,7 +92,8 @@ func writeLog() {
 }
 
 func TestServerLogScroll(t *testing.T) {
-	fmt.Println("----- TestServerLogScroll -----")
+	fmt.Println("----- testServerLogScroll -----")
+	// fmt.Println("msgReaderRunning:", msgReaderRunning)
 	end = make(chan bool, 64)
 	logConfig := &Config{
 		LogForbidStdout: true,
@@ -104,6 +104,7 @@ func TestServerLogScroll(t *testing.T) {
 		LogChannelCap:   40960,
 	}
 	InitLogger(logConfig)
+	// fmt.Println("msgReaderRunning:", msgReaderRunning)
 	time.Sleep(3 * time.Second)
 	go writeLog10000()
 	time.Sleep(3 * time.Second)
@@ -127,7 +128,7 @@ func TestLocalLogDefault(t *testing.T) {
 	fmt.Println("----- TestLocalLogDefault -----")
 	ClearDir("testdata/locallogs")
 	for i := 0; i < 100; i++ {
-		// 本地模式下，log的初始化只会执行一次，因此中途改变日志目录并不能生效，日志文件依然在默认的"~/zcgologs"下
+		// 本地模式下，log的初始化只会执行一次，因此中途改变日志目录并不能生效
 		if i == 50 {
 			logConfig := &Config{
 				LogFileDir: "testdata/locallogs",
@@ -152,14 +153,14 @@ func TestLocalLog(t *testing.T) {
 	}
 }
 
-func TestHome(t *testing.T) {
-	fmt.Println("----- TestHome -----")
-	fmt.Println(Home())
-}
+// func TestHome(t *testing.T) {
+// 	fmt.Println("----- TestHome -----")
+// 	fmt.Println(Home())
+// }
 
 func TestClearLogs(t *testing.T) {
 	ClearDir("testdata/locallogs")
 	ClearDir("testdata/serverlogs")
-	homeDir, _ := Home()
-	ClearDir(path.Join(homeDir, "zcgologs"))
+	// homeDir, _ := Home()
+	// ClearDir(path.Join(homeDir, "zcgologs"))
 }

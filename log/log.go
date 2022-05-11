@@ -16,7 +16,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
 	"runtime"
 	"strconv"
 	"sync"
@@ -73,7 +72,7 @@ const (
 type Config struct {
 	// 是否需要同时输出到控制台，默认: false
 	LogForbidStdout bool
-	// 日志文件目录，默认: ~/zcgologs
+	// 日志文件目录，默认: 空，此时日志只输出到控制台
 	LogFileDir string
 	// 日志文件名前缀，默认: zcgolog
 	LogFileNamePrefix string
@@ -93,26 +92,6 @@ type Config struct {
 	LogLevelCtlHost string
 	// 日志级别控制监听服务的Port，默认:9300
 	LogLevelCtlPort string
-}
-
-// 检查日志配置
-func CheckConfig(logConfig *Config) (bool, error) {
-	if logConfig == nil {
-		return false, fmt.Errorf("日志配置不可为空")
-	}
-	if logConfig.LogFileDir == "" {
-		return false, fmt.Errorf("日志目录不可为空")
-	}
-	if logConfig.LogFileNamePrefix == "" {
-		return false, fmt.Errorf("日志文件名前缀不可为空")
-	}
-	if logConfig.LogFileMaxSizeM <= 0 {
-		return false, fmt.Errorf("日志文件Size上限必须大于0")
-	}
-	if logConfig.LogLevelGlobal < LOG_LEVEL_DEBUG || logConfig.LogLevelGlobal >= log_level_max {
-		return false, fmt.Errorf("全局日志级别不能超出有效范围")
-	}
-	return true, nil
 }
 
 // 日志消息，日志缓冲通道用
@@ -146,6 +125,12 @@ var quitChn = make(chan int)
 // 当前日志文件
 var currentLogFile *os.File
 
+func closeCurrentLogFile() {
+	if currentLogFile != nil {
+		currentLogFile.Close()
+	}
+}
+
 // 当天日期
 var currentLogYMD string
 
@@ -153,15 +138,15 @@ var initDefaultLogConfigOnce sync.Once
 
 // 初始化默认日志配置
 func initDefaultLogConfig() {
-	homeDir, err := Home()
-	if err != nil {
-		homeDir = "~"
-	}
-	defaultLogFileDir := path.Join(homeDir, "zcgologs")
-	os.MkdirAll(defaultLogFileDir, os.ModePerm)
+	// homeDir, err := Home()
+	// if err != nil {
+	// 	homeDir = "~"
+	// }
+	// defaultLogFileDir := path.Join(homeDir, "zcgologs")
+	// os.MkdirAll(defaultLogFileDir, os.ModePerm)
 	zcgologConfig = &Config{
 		LogForbidStdout:   false,
-		LogFileDir:        defaultLogFileDir,
+		LogFileDir:        "",
 		LogFileNamePrefix: "zcgolog",
 		LogFileMaxSizeM:   2,
 		LogLevelGlobal:    LOG_LEVEL_DEBUG,
@@ -174,23 +159,23 @@ func initDefaultLogConfig() {
 	}
 }
 
-var configGolangLogOnce sync.Once
-
-// 配置golang的log
-//  获取日志文件，当天年月日，配置日志输出，配置日志前缀时间戳格式
-func configGolangLog() {
-	if currentLogFile != nil {
-		currentLogFile.Close()
-	}
-	// 获取日志文件
+// 服务器模式下配置golang的log
+func configGolangLogForServer() {
+	// 日志前缀时间戳格式
+	log.SetFlags(log.Ldate | log.Ltime)
+	// 关闭当前日志文件
+	closeCurrentLogFile()
+	// 获取最新日志文件
 	logFilePath, todayYMD, err := GetLogFilePathAndYMDToday(zcgologConfig)
 	if err != nil {
-		log.Fatal(err)
+		// 服务器模式下，日志文件必须存在
+		log.Panic(err)
 	}
 	currentLogYMD = todayYMD
 	currentLogFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
 	if err != nil {
-		log.Fatal(err)
+		// 服务器模式下，日志文件必须成功打开
+		log.Panic(err)
 	}
 	if !zcgologConfig.LogForbidStdout {
 		// 日志同时输出到日志文件与控制台
@@ -200,8 +185,52 @@ func configGolangLog() {
 		// 日志只输出到日志文件
 		log.SetOutput(currentLogFile)
 	}
+}
+
+var configGolangLogForLocalOnce sync.Once
+
+// 本地模式下配置golang的log
+//  获取日志文件，当天年月日，配置日志输出，配置日志前缀时间戳格式
+func configGolangLogForLocal() {
 	// 日志前缀时间戳格式
 	log.SetFlags(log.Ldate | log.Ltime)
+	// 关闭当前日志文件
+	closeCurrentLogFile()
+	// 获取最新日志文件
+	logFilePath, todayYMD, err := GetLogFilePathAndYMDToday(zcgologConfig)
+	if err != nil {
+		// 未能成功获取日志文件时，直接输出到控制台
+		currentLogYMD = getYMDToday()
+		currentLogFile = nil
+		log.SetOutput(os.Stdout)
+		log.Println(err.Error())
+		return
+	}
+	if logFilePath == OS_OUT_STDOUT {
+		// LogFileDir为空时，直接输出到控制台
+		currentLogYMD = todayYMD
+		currentLogFile = nil
+		log.SetOutput(os.Stdout)
+		return
+	}
+	currentLogYMD = todayYMD
+	currentLogFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		// TODO: 提醒未能获取日志文件
+		// 未能成功获取日志文件时，直接输出到控制台
+		currentLogFile = nil
+		log.SetOutput(os.Stdout)
+		log.Println(err.Error())
+		return
+	}
+	if !zcgologConfig.LogForbidStdout {
+		// 日志同时输出到日志文件与控制台
+		multiWriter := io.MultiWriter(os.Stdout, currentLogFile)
+		log.SetOutput(multiWriter)
+	} else {
+		// 日志只输出到日志文件
+		log.SetOutput(currentLogFile)
+	}
 }
 
 // 初始化zcgolog
@@ -253,17 +282,20 @@ func InitLogger(initConfig *Config) {
 	case LOG_MODE_LOCAL:
 		// fmt.Println("LOG_MODE_LOCAL zcgologConfig.LogMod:", zcgologConfig.LogMod)
 		// 本地日志模式下，初始化log只执行一次
-		// 但本地模式可能不会调用InitLogger，因此需要在首次调用日志输出函数时执行一次 configGolangLogOnce.Do(configGolangLog)
-		configGolangLogOnce.Do(configGolangLog)
+		// 但本地模式可能不会调用InitLogger，因此需要在首次调用日志输出函数时执行一次
+		configGolangLogForLocalOnce.Do(configGolangLogForLocal)
 	}
 }
 
 // 重启zcgolog服务器模式
 func restartZcgologServer() {
 	// 请求停止日志缓冲通道监听
-	QuitMsgReader()
+	err := QuitMsgReader(3000)
+	if err != nil {
+		log.Panic(err)
+	}
 	// 根据最新的zcgologConfig配置golang的log
-	configGolangLog()
+	configGolangLogForServer()
 	// 启动日志缓冲通道监听
 	go readAndWriteMsg()
 	// 等待3秒再启动日志级别控制监听服务，
@@ -273,10 +305,23 @@ func restartZcgologServer() {
 	runLogCtlServeOnce.Do(startLogCtlServe)
 }
 
-// 请求停止对缓冲消息通道的监听
-func QuitMsgReader() {
+// 停止对缓冲消息通道的监听
+func QuitMsgReader(timeoutMicroSec int) error {
 	if msgReaderRunning {
 		quitChn <- 1
+	}
+	startTime := time.Now()
+	for {
+		time.Sleep(time.Microsecond * 500)
+		if !msgReaderRunning {
+			return nil
+		}
+		if timeoutMicroSec > 0 {
+			timeNow := time.Now()
+			if timeoutMicroSec < int(timeNow.Sub(startTime).Microseconds()) {
+				return fmt.Errorf("日志缓冲通道监听未能在超时时间内停止, 超时时间(毫秒): %d", timeoutMicroSec)
+			}
+		}
 	}
 }
 
@@ -292,7 +337,7 @@ func readAndWriteMsg() {
 	logMsgChn = make(chan logMsg, zcgologConfig.LogChannelCap)
 	Info("readAndWriteMsg开始")
 	msgReaderRunning = true
-	defer currentLogFile.Close()
+	defer closeCurrentLogFile()
 	for {
 		// select IO多路复用 监听日志缓冲通道和退出通道
 		select {
@@ -304,35 +349,49 @@ func readAndWriteMsg() {
 		case msg := <-logMsgChn:
 			// 接收到日志消息
 			// 检查日志文件是否需要滚动
-			curLogFileStat, _ := currentLogFile.Stat()
-			todayYMD := getYMDToday()
-			// 当天日期发生变化或当前日志文件大小超过上限时，做日志文件滚动处理
-			if todayYMD != currentLogYMD || curLogFileStat.Size() >= int64(zcgologConfig.LogFileMaxSizeM)*1024*1024 {
-				currentLogFile.Close()
-				logFilePath, ymd, err := GetLogFilePathAndYMDToday(zcgologConfig)
-				if err != nil {
-					fmt.Printf("log/log.go readAndWriteMsg->GetLogFilePath 发生错误: %s\n", err)
-					continue
-				}
-				currentLogYMD = ymd
-				currentLogFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
-				if err != nil {
-					fmt.Printf("log/log.go readAndWriteMsg->os.OpenFile 发生错误: %s\n", err)
-					continue
-				}
-				// 重新设置log输出目标
-				if !zcgologConfig.LogForbidStdout {
-					// 日志同时输出到日志文件与控制台
-					multiWriter := io.MultiWriter(os.Stdout, currentLogFile)
-					log.SetOutput(multiWriter)
-				} else {
-					// 日志只输出到日志文件
-					log.SetOutput(currentLogFile)
+			if currentLogFile != nil {
+				curLogFileStat, _ := currentLogFile.Stat()
+				todayYMD := getYMDToday()
+				// 当天日期发生变化或当前日志文件大小超过上限时，做日志文件滚动处理
+				if todayYMD != currentLogYMD || curLogFileStat.Size() >= int64(zcgologConfig.LogFileMaxSizeM)*1024*1024 {
+					scrollLogFile()
 				}
 			}
 			msgPrefix := fmt.Sprintf("%s 时间:%s 代码:%s %d 函数:%s ", LogLevels[msg.logLevel], msg.pushTime.Format(LOG_TIME_FORMAT_YMDHMS), msg.callFile, msg.callLine, msg.callFunc)
 			log.Printf(msgPrefix+msg.logMsg, msg.logParams...)
 		}
+	}
+}
+
+// 日志文件滚动处理
+func scrollLogFile() {
+	closeCurrentLogFile()
+	logFilePath, ymd, err := GetLogFilePathAndYMDToday(zcgologConfig)
+	if err != nil {
+		// 获取最新日志文件失败时，直接向控制台输出
+		currentLogYMD = getYMDToday()
+		currentLogFile = nil
+		log.SetOutput(os.Stdout)
+		log.Printf("log/log.go readAndWriteMsg->GetLogFilePathAndYMDToday 发生错误: %s", err)
+		return
+	}
+	currentLogYMD = ymd
+	currentLogFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		// 获取最新日志文件失败时，直接向控制台输出
+		currentLogFile = nil
+		log.SetOutput(os.Stdout)
+		log.Printf("log/log.go readAndWriteMsg->os.OpenFile 发生错误: %s", err)
+		return
+	}
+	// 重新设置log输出目标
+	if !zcgologConfig.LogForbidStdout {
+		// 日志同时输出到日志文件与控制台
+		multiWriter := io.MultiWriter(os.Stdout, currentLogFile)
+		log.SetOutput(multiWriter)
+	} else {
+		// 日志只输出到日志文件
+		log.SetOutput(currentLogFile)
 	}
 }
 
@@ -346,12 +405,12 @@ func outputLog(msgLogLevel int, msg string, params ...interface{}) {
 	myFunc := runtime.FuncForPC(pc).Name()
 	// Panic与Fatal直接调用log包处理
 	if msgLogLevel == LOG_LEVEL_PANIC {
-		configGolangLogOnce.Do(configGolangLog)
+		configGolangLogForLocalOnce.Do(configGolangLogForLocal)
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
 		log.Panicf(msgPrefix+msg, params...)
 	}
 	if msgLogLevel == LOG_LEVEL_FATAL {
-		configGolangLogOnce.Do(configGolangLog)
+		configGolangLogForLocalOnce.Do(configGolangLogForLocal)
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
 		log.Fatalf(msgPrefix+msg, params...)
 	}
@@ -386,7 +445,7 @@ func outputLog(msgLogLevel int, msg string, params ...interface{}) {
 				// 直到下游readAndWriteMsg的goroutine将消息拉走，缓冲通道有空间空出来。
 				logMsgChn <- pushMsg
 			case LOG_CHN_OVER_POLICY_DISCARD:
-				// 丢弃模式下，如果缓冲通道已满，则进入select的default分支，丢弃该条日志。
+				// 丢弃模式下，如果缓冲通道已满，则进入select的default分支，丢弃该条日志，但会直接在控制台输出。
 				select {
 				case logMsgChn <- pushMsg:
 					return
@@ -398,13 +457,13 @@ func outputLog(msgLogLevel int, msg string, params ...interface{}) {
 			}
 		} else {
 			// 服务器模式下日志缓冲通道监听服务已停止时，改为本地模式输出日志
-			configGolangLogOnce.Do(configGolangLog)
+			configGolangLogForLocalOnce.Do(configGolangLogForLocal)
 			msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
 			log.Printf(msgPrefix+msg, params...)
 		}
 	case LOG_MODE_LOCAL:
 		// 本地日志模式下，configGolangLog只会执行一次
-		configGolangLogOnce.Do(configGolangLog)
+		configGolangLogForLocalOnce.Do(configGolangLogForLocal)
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
 		log.Printf(msgPrefix+msg, params...)
 	}
