@@ -8,7 +8,7 @@
    See the Mulan PSL v2 for more details.
 */
 
-package log
+package zclog
 
 import (
 	"fmt"
@@ -39,7 +39,7 @@ func writeLog() {
 	for i := 0; i < 100; i++ {
 		if i == 20 {
 			// 从20开始，控制本函数的日志级别为DEBUG
-			resp, err := http.Get("http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/log.writeLog&level=1")
+			resp, err := http.Get("http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=1")
 			if err != nil {
 				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
 			} else {
@@ -48,7 +48,7 @@ func writeLog() {
 		}
 		if i == 70 {
 			// 从70开始，控制本函数的日志级别为INFO
-			resp, err := http.Get("http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/log.writeLog&level=2")
+			resp, err := http.Get("http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=2")
 			if err != nil {
 				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
 			} else {
@@ -153,14 +153,7 @@ func TestLocalLog(t *testing.T) {
 	}
 }
 
-// func TestHome(t *testing.T) {
-// 	fmt.Println("----- TestHome -----")
-// 	fmt.Println(Home())
-// }
-
 func TestClearLogs(t *testing.T) {
 	ClearDir("testdata/locallogs")
 	ClearDir("testdata/serverlogs")
-	// homeDir, _ := Home()
-	// ClearDir(path.Join(homeDir, "zcgologs"))
 }

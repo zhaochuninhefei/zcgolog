@@ -8,7 +8,7 @@
    See the Mulan PSL v2 for more details.
 */
 
-package log
+package zclog
 
 import (
 	"fmt"
@@ -112,6 +112,9 @@ type logMsg struct {
 	logParams []interface{}
 }
 
+// zcgoLogger
+var zcgoLogger *log.Logger
+
 // zcgolog配置
 var zcgologConfig *Config
 
@@ -161,8 +164,8 @@ func initDefaultLogConfig() {
 
 // 服务器模式下配置golang的log
 func configGolangLogForServer() {
-	// 日志前缀时间戳格式
-	log.SetFlags(log.Ldate | log.Ltime)
+	// // 日志前缀时间戳格式
+	// log.SetFlags(log.Ldate | log.Ltime)
 	// 关闭当前日志文件
 	closeCurrentLogFile()
 	// 获取最新日志文件
@@ -180,10 +183,12 @@ func configGolangLogForServer() {
 	if !zcgologConfig.LogForbidStdout {
 		// 日志同时输出到日志文件与控制台
 		multiWriter := io.MultiWriter(os.Stdout, currentLogFile)
-		log.SetOutput(multiWriter)
+		zcgoLogger = log.New(multiWriter, "", log.Ldate|log.Ltime)
+		// log.SetOutput(multiWriter)
 	} else {
 		// 日志只输出到日志文件
-		log.SetOutput(currentLogFile)
+		// log.SetOutput(currentLogFile)
+		zcgoLogger = log.New(currentLogFile, "", log.Ldate|log.Ltime)
 	}
 }
 
@@ -192,8 +197,8 @@ var configGolangLogForLocalOnce sync.Once
 // 本地模式下配置golang的log
 //  获取日志文件，当天年月日，配置日志输出，配置日志前缀时间戳格式
 func configGolangLogForLocal() {
-	// 日志前缀时间戳格式
-	log.SetFlags(log.Ldate | log.Ltime)
+	// // 日志前缀时间戳格式
+	// log.SetFlags(log.Ldate | log.Ltime)
 	// 关闭当前日志文件
 	closeCurrentLogFile()
 	// 获取最新日志文件
@@ -202,34 +207,38 @@ func configGolangLogForLocal() {
 		// 未能成功获取日志文件时，直接输出到控制台
 		currentLogYMD = getYMDToday()
 		currentLogFile = nil
-		log.SetOutput(os.Stdout)
-		log.Println(err.Error())
+		zcgoLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+		// log.SetOutput(os.Stdout)
+		zcgoLogger.Println(err.Error())
 		return
 	}
 	if logFilePath == OS_OUT_STDOUT {
 		// LogFileDir为空时，直接输出到控制台
 		currentLogYMD = todayYMD
 		currentLogFile = nil
-		log.SetOutput(os.Stdout)
+		zcgoLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+		// log.SetOutput(os.Stdout)
 		return
 	}
 	currentLogYMD = todayYMD
 	currentLogFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
 	if err != nil {
-		// TODO: 提醒未能获取日志文件
 		// 未能成功获取日志文件时，直接输出到控制台
 		currentLogFile = nil
-		log.SetOutput(os.Stdout)
-		log.Println(err.Error())
+		zcgoLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+		// log.SetOutput(os.Stdout)
+		zcgoLogger.Println(err.Error())
 		return
 	}
 	if !zcgologConfig.LogForbidStdout {
 		// 日志同时输出到日志文件与控制台
 		multiWriter := io.MultiWriter(os.Stdout, currentLogFile)
-		log.SetOutput(multiWriter)
+		// log.SetOutput(multiWriter)
+		zcgoLogger = log.New(multiWriter, "", log.Ldate|log.Ltime)
 	} else {
 		// 日志只输出到日志文件
-		log.SetOutput(currentLogFile)
+		// log.SetOutput(currentLogFile)
+		zcgoLogger = log.New(currentLogFile, "", log.Ldate|log.Ltime)
 	}
 }
 
@@ -344,7 +353,7 @@ func readAndWriteMsg() {
 		case <-quitChn:
 			// 接收到退出指令
 			msgReaderRunning = false
-			log.Println("readAndWriteMsg结束")
+			zcgoLogger.Println("readAndWriteMsg结束")
 			return
 		case msg := <-logMsgChn:
 			// 接收到日志消息
@@ -358,7 +367,7 @@ func readAndWriteMsg() {
 				}
 			}
 			msgPrefix := fmt.Sprintf("%s 时间:%s 代码:%s %d 函数:%s ", LogLevels[msg.logLevel], msg.pushTime.Format(LOG_TIME_FORMAT_YMDHMS), msg.callFile, msg.callLine, msg.callFunc)
-			log.Printf(msgPrefix+msg.logMsg, msg.logParams...)
+			zcgoLogger.Printf(msgPrefix+msg.logMsg, msg.logParams...)
 		}
 	}
 }
@@ -371,8 +380,8 @@ func scrollLogFile() {
 		// 获取最新日志文件失败时，直接向控制台输出
 		currentLogYMD = getYMDToday()
 		currentLogFile = nil
-		log.SetOutput(os.Stdout)
-		log.Printf("log/log.go readAndWriteMsg->GetLogFilePathAndYMDToday 发生错误: %s", err)
+		zcgoLogger.SetOutput(os.Stdout)
+		zcgoLogger.Printf("zclog/log.go readAndWriteMsg->GetLogFilePathAndYMDToday 发生错误: %s", err)
 		return
 	}
 	currentLogYMD = ymd
@@ -380,18 +389,18 @@ func scrollLogFile() {
 	if err != nil {
 		// 获取最新日志文件失败时，直接向控制台输出
 		currentLogFile = nil
-		log.SetOutput(os.Stdout)
-		log.Printf("log/log.go readAndWriteMsg->os.OpenFile 发生错误: %s", err)
+		zcgoLogger.SetOutput(os.Stdout)
+		zcgoLogger.Printf("zclog/log.go readAndWriteMsg->os.OpenFile 发生错误: %s", err)
 		return
 	}
 	// 重新设置log输出目标
 	if !zcgologConfig.LogForbidStdout {
 		// 日志同时输出到日志文件与控制台
 		multiWriter := io.MultiWriter(os.Stdout, currentLogFile)
-		log.SetOutput(multiWriter)
+		zcgoLogger.SetOutput(multiWriter)
 	} else {
 		// 日志只输出到日志文件
-		log.SetOutput(currentLogFile)
+		zcgoLogger.SetOutput(currentLogFile)
 	}
 }
 
@@ -407,12 +416,12 @@ func outputLog(msgLogLevel int, msg string, params ...interface{}) {
 	if msgLogLevel == LOG_LEVEL_PANIC {
 		configGolangLogForLocalOnce.Do(configGolangLogForLocal)
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
-		log.Panicf(msgPrefix+msg, params...)
+		zcgoLogger.Panicf(msgPrefix+msg, params...)
 	}
 	if msgLogLevel == LOG_LEVEL_FATAL {
 		configGolangLogForLocalOnce.Do(configGolangLogForLocal)
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
-		log.Fatalf(msgPrefix+msg, params...)
+		zcgoLogger.Fatalf(msgPrefix+msg, params...)
 	}
 	// fmt.Printf("myFunc: %s\n", myFunc)
 	// 获取函数对应的日志级别
@@ -459,13 +468,13 @@ func outputLog(msgLogLevel int, msg string, params ...interface{}) {
 			// 服务器模式下日志缓冲通道监听服务已停止时，改为本地模式输出日志
 			configGolangLogForLocalOnce.Do(configGolangLogForLocal)
 			msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
-			log.Printf(msgPrefix+msg, params...)
+			zcgoLogger.Printf(msgPrefix+msg, params...)
 		}
 	case LOG_MODE_LOCAL:
 		// 本地日志模式下，configGolangLog只会执行一次
 		configGolangLogForLocalOnce.Do(configGolangLogForLocal)
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
-		log.Printf(msgPrefix+msg, params...)
+		zcgoLogger.Printf(msgPrefix+msg, params...)
 	}
 }
 
@@ -477,7 +486,7 @@ var runLogCtlServeOnce sync.Once
 //  URL参数为logger和level;
 //  logger是调整目标，对应具体函数的完整包名路径，如: gitee.com/zhaochuninhefei/zcgolog/log.writeLog
 //  level是调整后的日志级别，支持从1到6，分别是 DEBUG,INFO,WARNNING,ERROR,CRITICAL,FATAL
-//  一个完整的请求URL示例:http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/log.writeLog&level=1
+//  一个完整的请求URL示例:http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=1
 func handleLogLevelCtl(w http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	logger := query.Get("logger")
@@ -500,12 +509,12 @@ func handleLogLevelCtl(w http.ResponseWriter, req *http.Request) {
 //  URL参数为logger和level;
 //  logger是调整目标，对应具体函数的完整包名路径，如: gitee.com/zhaochuninhefei/zcgolog/log.writeLog ;
 //  level是调整后的日志级别，支持从1到6，分别是 DEBUG,INFO,WARNNING,ERROR,CRITICAL,FATAL ;
-//  一个完整的请求URL示例:http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/log.writeLog&level=1
+//  一个完整的请求URL示例:http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=1
 func runLogCtlServe() {
 	listenAddress := zcgologConfig.LogLevelCtlHost + ":" + zcgologConfig.LogLevelCtlPort
 	http.HandleFunc("/zcgolog/api/level/ctl", handleLogLevelCtl)
 	Infof("启动监听: http://%s/zcgolog/api/level/ctl", listenAddress)
-	log.Fatal(http.ListenAndServe(listenAddress, nil))
+	zcgoLogger.Fatal(http.ListenAndServe(listenAddress, nil))
 }
 
 // 异步启动日志级别控制监听服务

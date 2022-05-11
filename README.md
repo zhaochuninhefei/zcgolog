@@ -14,20 +14,20 @@ zcgolog
 # 使用
 zcgolog的使用很简单，直接依赖即可使用，默认使用本地模式，如果要使用服务器模式，只需要在代码中添加zcgolog的配置与初始化即可。
 
-依赖zcgolog，在相关工程的`go.mod`文件中添加:
+在对应的代码中使用:
 ```
-gitee.com/zhaochuninhefei/zcgolog v0.0.6
-```
-
-并在对应的代码中使用:
-```
-import "gitee.com/zhaochuninhefei/zcgolog/log"
+import "gitee.com/zhaochuninhefei/zcgolog/zclog"
 ...
 
 func test() {
     ...
-    log.Debug("这是一条测试消息")
+    zclog.Debug("这是一条测试消息")
 }
+```
+
+然后在相关工程的`go.mod`文件中添加:
+```
+gitee.com/zhaochuninhefei/zcgolog v0.0.7
 ```
 
 然后执行`go mod tidy`即可。
@@ -46,7 +46,7 @@ func initZcgolog() {
         // 指定日志目录
 		LogFileDir:        "/logs",
         // 指定日志文件名前缀
-		LogFileNamePrefix: "fabric-ca-server-zcgolog",
+		LogFileNamePrefix: "xxxxxxx",
         // 指定全局日志级别
 		LogLevelGlobal:    log.LOG_LEVEL_INFO,
         // 指定日志模式为服务器模式
@@ -61,7 +61,7 @@ func initZcgolog() {
 
 服务器模式下日志输出格式:
 ```
-写入文件时间 日志级别 日志输出请求时间 代码位置(输出该条日志的代码文件及行数) 函数包路径 日志内容  
+[写入文件时间] [日志级别] [日志输出请求时间] [代码位置(输出该条日志的代码文件及行数)] [函数包路径] [日志内容]  
 ```
 > 因为是异步输出，所以有两个时间戳。前者是实际写入日志文件的时间，后者是调用方请求写日志的时间。
 
@@ -92,7 +92,7 @@ curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhef
 
 本地模式下日志输出格式:
 ```
-写入文件时间 日志级别 代码位置(输出该条日志的代码文件及行数) 函数包路径 日志内容  
+[写入文件时间] [日志级别] [代码位置(输出该条日志的代码文件及行数)] [函数包路径] [日志内容]  
 ```
 
 示例如下:
@@ -178,7 +178,4 @@ BenchmarkLogLocal-20    	  482731	      2458 ns/op	     896 B/op	      10 allocs
 BenchmarkLogGolang-20    	  991264	      1204 ns/op	      39 B/op	       1 allocs/op
 ```
 > BenchmarkLogServer是服务器模式，BenchmarkLogLocal是本地模式，BenchmarkLogGolang是直接使用golang原生log包。
-
-# 其他说明
-底层写日志时，直接使用的golang自己的`log`包，因此zcgolog的配置会影响程序中其他使用golang的log包的日志输出，包括:其输出目标会被改为同时输出到控制台和zcgolog配置的日志文件，其前缀时间戳格式会被改为`log.SetFlags(log.Ldate | log.Ltime)`。
 

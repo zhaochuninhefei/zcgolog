@@ -17,7 +17,7 @@ import (
 	"testing"
 	"time"
 
-	zlog "gitee.com/zhaochuninhefei/zcgolog/log"
+	zlog "gitee.com/zhaochuninhefei/zcgolog/zclog"
 )
 
 func TestMain(m *testing.M) {
