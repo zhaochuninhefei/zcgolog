@@ -40,6 +40,8 @@ func GetLogFilePathAndYMDToday(logConfig *Config) (string, string, error) {
 	if res == CONFIG_CHECK_RESULT_NOFILEDIR {
 		return OS_OUT_STDOUT, getYMDToday(), nil
 	}
+	// 防止日志文件目录尚未创建
+	os.MkdirAll(logConfig.LogFileDir, os.ModePerm)
 	// 读取日志目录下所有文件
 	files, err := ioutil.ReadDir(logConfig.LogFileDir)
 	if err != nil {
