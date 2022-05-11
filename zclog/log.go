@@ -78,7 +78,7 @@ type Config struct {
 	LogFileNamePrefix string
 	// 日志文件大小上限，单位M，默认: 2
 	LogFileMaxSizeM int
-	// 全局日志级别，默认:DEBUG
+	// 全局日志级别，默认:INFO
 	LogLevelGlobal int
 	// 日志格式，默认: "%datetime %level %file %line %func %msg"，目前格式固定，该配置暂时没有使用
 	LogLineFormat string
@@ -152,7 +152,7 @@ func initDefaultLogConfig() {
 		LogFileDir:        "",
 		LogFileNamePrefix: "zcgolog",
 		LogFileMaxSizeM:   2,
-		LogLevelGlobal:    LOG_LEVEL_DEBUG,
+		LogLevelGlobal:    LOG_LEVEL_INFO,
 		LogLineFormat:     "%level %pushTime %file %line %callFunc %msg",
 		LogChannelCap:     4096,
 		LogChnOverPolicy:  LOG_CHN_OVER_POLICY_DISCARD,
@@ -282,6 +282,8 @@ func InitLogger(initConfig *Config) {
 			zcgologConfig.LogLineFormat = initConfig.LogLineFormat
 		}
 	}
+	// 设置全局日志级别
+	Level = zcgologConfig.LogLevelGlobal
 	// 根据日志模式决定是否启用日志缓冲队列与在线修改日志级别功能
 	switch zcgologConfig.LogMod {
 	case LOG_MODE_SERVER:
@@ -292,13 +294,14 @@ func InitLogger(initConfig *Config) {
 		// fmt.Println("LOG_MODE_LOCAL zcgologConfig.LogMod:", zcgologConfig.LogMod)
 		// 本地日志模式下，初始化log只执行一次
 		// 但本地模式可能不会调用InitLogger，因此需要在首次调用日志输出函数时执行一次
-		configGolangLogForLocalOnce.Do(configGolangLogForLocal)
+		// configGolangLogForLocalOnce.Do(configGolangLogForLocal)
+		configGolangLogForLocal()
 	}
 }
 
 // 重启zcgolog服务器模式
 func restartZcgologServer() {
-	// 请求停止日志缓冲通道监听
+	// 停止日志缓冲通道监听
 	err := QuitMsgReader(3000)
 	if err != nil {
 		log.Panic(err)
@@ -307,9 +310,9 @@ func restartZcgologServer() {
 	configGolangLogForServer()
 	// 启动日志缓冲通道监听
 	go readAndWriteMsg()
-	// 等待3秒再启动日志级别控制监听服务，
+	// 等待日志级别控制监听服务启动，
 	// 防止runLogCtlServe执行时日志缓冲通道尚未初始化。
-	time.Sleep(3 * time.Second)
+	waitMsgReaderStart(3000)
 	// 启动日志级别控制监听服务
 	runLogCtlServeOnce.Do(startLogCtlServe)
 }
@@ -331,6 +334,23 @@ func QuitMsgReader(timeoutMicroSec int) error {
 				return fmt.Errorf("日志缓冲通道监听未能在超时时间内停止, 超时时间(毫秒): %d", timeoutMicroSec)
 			}
 		}
+	}
+}
+
+// 等待日志缓冲通道监听启动
+func waitMsgReaderStart(timeoutMicroSec int) error {
+	startTime := time.Now()
+	for {
+		if msgReaderRunning {
+			return nil
+		}
+		if timeoutMicroSec > 0 {
+			timeNow := time.Now()
+			if timeoutMicroSec < int(timeNow.Sub(startTime).Microseconds()) {
+				return fmt.Errorf("日志缓冲通道监听未能在超时时间内启动, 超时时间(毫秒): %d", timeoutMicroSec)
+			}
+		}
+		time.Sleep(time.Microsecond * 500)
 	}
 }
 
@@ -427,11 +447,11 @@ func outputLog(msgLogLevel int, msg string, params ...interface{}) {
 	// 获取函数对应的日志级别
 	myLevel := logLevelCtl[myFunc]
 	if myLevel == 0 {
-		myLevel = zcgologConfig.LogLevelGlobal
+		myLevel = Level
 	}
 	// 判断该日志是否需要输出
+	// fmt.Printf("myLevel :  %d , msgLogLevel: %d\n", myLevel, msgLogLevel)
 	if myLevel > msgLogLevel {
-		// fmt.Printf("myLevel > msgLogLevel %d > %d\n", myLevel, msgLogLevel)
 		return
 	}
 	// 根据日志模式判断同步还是异步输出
@@ -478,11 +498,12 @@ func outputLog(msgLogLevel int, msg string, params ...interface{}) {
 	}
 }
 
-// DEBUG日志输出控制
+// 日志级别控制
 var logLevelCtl = map[string]int{}
+var Level = LOG_LEVEL_INFO
 var runLogCtlServeOnce sync.Once
 
-// 处理日志级别调整请求
+// 处理指定函数的日志级别调整请求
 //  URL参数为logger和level;
 //  logger是调整目标，对应具体函数的完整包名路径，如: gitee.com/zhaochuninhefei/zcgolog/log.writeLog
 //  level是调整后的日志级别，支持从1到6，分别是 DEBUG,INFO,WARNNING,ERROR,CRITICAL,FATAL
@@ -491,15 +512,35 @@ func handleLogLevelCtl(w http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	logger := query.Get("logger")
 	level := query.Get("level")
-	var err error
-	// fmt.Printf("logger: %s\n", logger)
-	// fmt.Printf("logLevelCtl[logger] before: %d\n", logLevelCtl[logger])
-	logLevelCtl[logger], err = strconv.Atoi(level)
-	// fmt.Printf("logLevelCtl[logger] after: %d\n", logLevelCtl[logger])
+	targetLevel, err := strconv.Atoi(level)
 	if err != nil {
 		fmt.Fprintf(w, "发生错误: %s\n", err)
 	} else {
-		fmt.Fprintf(w, "操作成功\n")
+		if targetLevel >= LOG_LEVEL_DEBUG && targetLevel < log_level_max {
+			logLevelCtl[logger] = targetLevel
+			fmt.Fprintf(w, "操作成功\n")
+		} else {
+			logLevelCtl[logger] = 0
+			fmt.Fprintf(w, "传入的level不在有效范围,目标函数仍采取全局日志级别\n")
+		}
+	}
+}
+
+// 处理全局日志级别调整请求
+func handleLogLevelCtlGlobal(w http.ResponseWriter, req *http.Request) {
+	query := req.URL.Query()
+	level := query.Get("level")
+	targetLevel, err := strconv.Atoi(level)
+	if err != nil {
+		fmt.Fprintf(w, "发生错误: %s\n", err)
+	} else {
+		if targetLevel >= LOG_LEVEL_DEBUG && targetLevel < log_level_max {
+			Level = targetLevel
+			fmt.Fprintf(w, "操作成功\n")
+		} else {
+			Level = zcgologConfig.LogLevelGlobal
+			fmt.Fprintf(w, "传入的level不在有效范围,全局日志级别恢复为启动配置\n")
+		}
 	}
 }
 
@@ -513,7 +554,8 @@ func handleLogLevelCtl(w http.ResponseWriter, req *http.Request) {
 func runLogCtlServe() {
 	listenAddress := zcgologConfig.LogLevelCtlHost + ":" + zcgologConfig.LogLevelCtlPort
 	http.HandleFunc("/zcgolog/api/level/ctl", handleLogLevelCtl)
-	Infof("启动监听: http://%s/zcgolog/api/level/ctl", listenAddress)
+	http.HandleFunc("/zcgolog/api/level/global", handleLogLevelCtlGlobal)
+	Infof("启动日志级别控制监听服务: [http://%s/zcgolog/api/level/**]", listenAddress)
 	zcgoLogger.Fatal(http.ListenAndServe(listenAddress, nil))
 }
 

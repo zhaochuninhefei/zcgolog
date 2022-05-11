@@ -27,10 +27,12 @@ func test() {
 
 然后在相关工程的`go.mod`文件中添加:
 ```
-gitee.com/zhaochuninhefei/zcgolog v0.0.7
+gitee.com/zhaochuninhefei/zcgolog latest
 ```
 
-然后执行`go mod tidy`即可。
+然后在`go.mod`文件目录下执行`go mod tidy`即可。
+> `go mod tidy`命令遇到版本号`latest`时会自动下载最新版本。
+> 
 > 如果无法下载`gitee.com/zhaochuninhefei/zcgolog`，请将`gitee.com/zhaochuninhefei/zcgolog`设置为go的私有仓库，允许直接下载即可:
 ```sh
 go env -w GOPRIVATE=gitee.com/zhaochuninhefei/zcgolog
@@ -75,6 +77,12 @@ func initZcgolog() {
 zcgolog在服务器模式下提供了在线修改日志级别的httpAPI，无需重启服务。以`curl`为例，使用方法如下:
 
 ```sh
+# 修改全局日志级别
+# 如果level传入[1~6]以外的值，则全局日志级别恢复为启动时的配置
+curl "http://localhost:9300/zcgolog/api/level/global?level=1"
+
+# 修改指定函数的日志级别
+# 如果level传入[1~6]以外的值，则作为0处理，该函数的日志级别将采用全局日志级别
 curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/log.writeLog&level=1"
 ```
 
