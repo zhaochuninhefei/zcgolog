@@ -88,7 +88,7 @@ type Config struct {
 	LogChannelCap int
 	// 日志缓冲通道填满后处理策略，默认:LOG_CHN_OVER_POLICY_DISCARD 丢弃该条日志
 	LogChnOverPolicy int
-	// 日志级别控制监听服务的Host，默认:localhost
+	// 日志级别控制监听服务的Host，默认:""
 	LogLevelCtlHost string
 	// 日志级别控制监听服务的Port，默认:9300
 	LogLevelCtlPort string
@@ -157,7 +157,7 @@ func initDefaultLogConfig() {
 		LogChannelCap:     4096,
 		LogChnOverPolicy:  LOG_CHN_OVER_POLICY_DISCARD,
 		LogMod:            LOG_MODE_LOCAL,
-		LogLevelCtlHost:   "localhost",
+		LogLevelCtlHost:   "",
 		LogLevelCtlPort:   "9300",
 	}
 }
