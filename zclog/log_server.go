@@ -10,6 +10,10 @@
 
 package zclog
 
+/*
+zclog/log_server.go zcgolog服务器模式相关代码
+*/
+
 import (
 	"fmt"
 	"io"
@@ -54,13 +58,7 @@ var quitChn = make(chan int)
 
 // 启动zcgolog服务器模式
 func startZcgologServer() {
-	// // 停止日志缓冲通道监听
-	// err := QuitMsgReader(3000)
-	// if err != nil {
-	// 	log.Panic(err)
-	// }
-	// 根据最新的zcgologConfig配置golang的log
-	// initZcgoLoggerForServer()
+	// 初始化zcgologger
 	initZcgoLogger()
 	// 启动日志缓冲通道监听
 	go readAndWriteMsg()
@@ -70,34 +68,6 @@ func startZcgologServer() {
 	// 启动日志级别控制监听服务
 	runLogCtlServeOnce.Do(startLogCtlServe)
 }
-
-// // 服务器模式下配置golang的log
-// func initZcgoLoggerForServer() {
-// 	// 关闭当前日志文件
-// 	closeCurrentLogFile()
-// 	// 获取最新日志文件
-// 	logFilePath, todayYMD, err := GetLogFilePathAndYMDToday(zcgologConfig)
-// 	if err != nil {
-// 		// 服务器模式下，日志文件必须存在
-// 		log.Panic(err)
-// 	}
-// 	currentLogYMD = todayYMD
-// 	currentLogFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
-// 	if err != nil {
-// 		// 服务器模式下，日志文件必须成功打开
-// 		log.Panic(err)
-// 	}
-// 	if !zcgologConfig.LogForbidStdout {
-// 		// 日志同时输出到日志文件与控制台
-// 		multiWriter := io.MultiWriter(os.Stdout, currentLogFile)
-// 		zcgoLogger = log.New(multiWriter, "", log.Ldate|log.Ltime)
-// 		// log.SetOutput(multiWriter)
-// 	} else {
-// 		// 日志只输出到日志文件
-// 		// log.SetOutput(currentLogFile)
-// 		zcgoLogger = log.New(currentLogFile, "", log.Ldate|log.Ltime)
-// 	}
-// }
 
 // 停止对缓冲消息通道的监听
 //  timeoutMilliSec 超时时间(毫秒),该值<=0时表示会一直等待直到监听停止。

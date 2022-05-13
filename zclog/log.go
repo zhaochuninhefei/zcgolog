@@ -10,6 +10,10 @@
 
 package zclog
 
+/*
+zclog/log.go zcgolog基本处理，包括配置相关定义与处理、本地模式相关处理、日志输出处理等
+*/
+
 import (
 	"fmt"
 	"log"
@@ -149,8 +153,7 @@ func InitLogger(initConfig *Config) {
 		// 启动zcgolog服务器模式
 		startZcgologServer()
 	case LOG_MODE_LOCAL:
-		// 初始化本地模式的zcgoLogger
-		// initZcgoLoggerForLocal()
+		// 初始化zcgoLogger
 		initZcgoLogger()
 	}
 }
@@ -174,81 +177,21 @@ func initDefaultLogConfig() {
 	}
 }
 
-// // 本地模式下初始化zcgoLogger
-// func initZcgoLoggerForLocal() {
-// 	// 关闭当前日志文件
-// 	closeCurrentLogFile()
-// 	// 获取最新日志文件
-// 	logFilePath, todayYMD, err := GetLogFilePathAndYMDToday(zcgologConfig)
-// 	if err != nil {
-// 		// 未能成功获取日志文件时，直接输出到控制台
-// 		currentLogYMD = getYMDToday()
-// 		currentLogFile = nil
-// 		zcgoLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
-// 		zcgoLogger.Println(err.Error())
-// 		return
-// 	}
-// 	if logFilePath == OS_OUT_STDOUT {
-// 		// LogFileDir为空时，直接输出到控制台
-// 		currentLogYMD = todayYMD
-// 		currentLogFile = nil
-// 		zcgoLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
-// 		return
-// 	}
-// 	currentLogYMD = todayYMD
-// 	currentLogFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
-// 	if err != nil {
-// 		// 未能成功打开日志文件时，直接输出到控制台
-// 		currentLogFile = nil
-// 		zcgoLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
-// 		zcgoLogger.Println(err.Error())
-// 		return
-// 	}
-// 	if !zcgologConfig.LogForbidStdout {
-// 		// 日志同时输出到日志文件与控制台
-// 		multiWriter := io.MultiWriter(os.Stdout, currentLogFile)
-// 		zcgoLogger = log.New(multiWriter, "", log.Ldate|log.Ltime)
-// 	} else {
-// 		// 日志只输出到日志文件
-// 		zcgoLogger = log.New(currentLogFile, "", log.Ldate|log.Ltime)
-// 	}
-// }
-
-// var initZcgoLoggerForDefaultOnce sync.Once
-
-// // 初始化默认zcgoLogger
-// //  只尝试执行一次
-// func initZcgoLoggerForDefault() {
-// 	if zcgoLogger != nil {
-// 		return
-// 	}
-// 	// 初始化zcgoLogger
-// 	currentLogYMD = getYMDToday()
-// 	currentLogFile = nil
-// 	zcgoLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
-// }
-
 // 输出日志
 func outputLog(msgLogLevel int, msg string, params ...interface{}) {
-	// // 初始化默认配置(只会执行一次)
-	// initDefaultLogConfigOnce.Do(initDefaultLogConfig)
 	// 获取日志接口调用方的程序计数器，文件名以及行号
 	pc, file, line, _ := runtime.Caller(2)
 	// 调用处函数包路径
 	myFunc := runtime.FuncForPC(pc).Name()
 	// Panic与Fatal直接调用log包处理
 	if msgLogLevel == LOG_LEVEL_PANIC {
-		// initZcgoLoggerForDefaultOnce.Do(initZcgoLoggerForDefault)
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
 		// 输出panic日志并抛出panic，当前goroutine终止
-		// initZcgoLogger(logger_init_type_default)
 		zcgoLogger.Panicf(msgPrefix+msg, params...)
 	}
 	if msgLogLevel == LOG_LEVEL_FATAL {
-		// initZcgoLoggerForDefaultOnce.Do(initZcgoLoggerForDefault)
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
 		// 输出fatal日志并终止程序
-		// initZcgoLogger(logger_init_type_default)
 		zcgoLogger.Fatalf(msgPrefix+msg, params...)
 	}
 	// 获取函数对应的日志级别
@@ -278,16 +221,12 @@ func outputLog(msgLogLevel int, msg string, params ...interface{}) {
 			pushMsgToLogMsgChn(pushMsg)
 		} else {
 			// 服务器模式下日志缓冲通道监听服务已停止时，直接输出日志
-			// initZcgoLoggerForDefaultOnce.Do(initZcgoLoggerForDefault)
 			msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
-			// initZcgoLogger(logger_init_type_default)
 			zcgoLogger.Printf(msgPrefix+msg, params...)
 		}
 	case LOG_MODE_LOCAL:
-		// 本地日志模式下，configGolangLog只会执行一次
-		// initZcgoLoggerForDefaultOnce.Do(initZcgoLoggerForDefault)
+		// 本地日志模式下，直接输出日志
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
-		// initZcgoLogger(logger_init_type_default)
 		zcgoLogger.Printf(msgPrefix+msg, params...)
 	}
 }

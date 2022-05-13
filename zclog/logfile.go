@@ -10,6 +10,10 @@
 
 package zclog
 
+/*
+zclog/logfile.go 日志文件相关处理
+*/
+
 import (
 	"fmt"
 	"io/ioutil"

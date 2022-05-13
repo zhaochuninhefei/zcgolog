@@ -1,4 +1,18 @@
+/*
+   Copyright (c) 2022 zhaochun
+   gitee.com/zhaochuninhefei/zcgolog is licensed under Mulan PSL v2.
+   You can use this software according to the terms and conditions of the Mulan PSL v2.
+   You may obtain a copy of Mulan PSL v2 at:
+            http://license.coscl.org.cn/MulanPSL2
+   THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+   See the Mulan PSL v2 for more details.
+*/
+
 package zclog
+
+/*
+zclog/log_factory.go zcgolog工厂，用于初始化zcgoLogger
+*/
 
 import (
 	"io"
@@ -7,13 +21,6 @@ import (
 	"sync"
 )
 
-// const (
-// 	logger_init_type_default = iota + 1
-// 	logger_init_type_local
-// 	logger_init_type_server
-// )
-
-// var loggerHasInitialized bool = false
 var loggerLock sync.Mutex
 
 // 初始化zcgoLogger
@@ -67,24 +74,4 @@ func initZcgoLogger() {
 		// 日志只输出到日志文件
 		zcgoLogger.SetOutput(currentLogFile)
 	}
-	// case logger_init_type_server:
-	// 	if err != nil {
-	// 		// 服务器模式下，日志文件必须存在
-	// 		log.Panic(err)
-	// 	}
-	// 	currentLogYMD = todayYMD
-	// 	currentLogFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
-	// 	if err != nil {
-	// 		// 服务器模式下，日志文件必须成功打开
-	// 		log.Panic(err)
-	// 	}
-	// 	if !zcgologConfig.LogForbidStdout {
-	// 		// 日志同时输出到日志文件与控制台
-	// 		multiWriter := io.MultiWriter(os.Stdout, currentLogFile)
-	// 		zcgoLogger.SetOutput(multiWriter)
-	// 	} else {
-	// 		// 日志只输出到日志文件
-	// 		zcgoLogger.SetOutput(currentLogFile)
-	// 	}
-	// }
 }

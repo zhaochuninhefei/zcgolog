@@ -10,6 +10,10 @@
 
 package zclog
 
+/*
+zclog/api.go 提供zcgolog日志输出接口函数
+*/
+
 import "fmt"
 
 // 日志级别: DEBUG

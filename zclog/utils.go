@@ -10,6 +10,10 @@
 
 package zclog
 
+/*
+zclog/utils.go zcgolog相关通用处理
+*/
+
 import (
 	"bytes"
 	"errors"

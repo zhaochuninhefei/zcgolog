@@ -10,6 +10,10 @@
 
 package zclog
 
+/*
+zclog/log_level_ctl_service.go 日志级别控制服务，提供httpAPI来在线调整日志级别
+*/
+
 import (
 	"fmt"
 	"net/http"
