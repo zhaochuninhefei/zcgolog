@@ -96,7 +96,7 @@ curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhef
 
 ## 本地模式
 本地模式无需额外配置，当然也支持自定义配置，方法与服务器模式一样，注意`LogMod`采用默认值，或配置为`log.LOG_MODE_LOCAL`。
-> 本地模式默认只输出到控制台。输出日志文件需要显式配置，参考后续的`配置默认值`中的相关说明。
+> 本地模式默认只输出到控制台。输出日志文件需要显式配置，参考后续的`配置及其默认值`中的相关说明。
 
 本地模式下日志输出格式:
 ```
@@ -108,19 +108,19 @@ curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhef
 2022/05/07 16:57:31 [DEBUG] 代码:/home/zhaochun/work/sources/gitee.com/zhaochuninhefei/zcgolog/log/log_test.go 82 函数:gitee.com/zhaochuninhefei/zcgolog/log.TestLocalLog 测试日志
 ```
 
-## 配置默认值
-各个配置的默认值如下:
-- LogMod : `LOG_MODE_LOCAL`,int类型，值为1,目前支持 LOG_MODE_LOCAL:1 与 LOG_MODE_SERVER:2。
-- LogFileDir : 服务器模式下必须显式配置一个非空目录；本地模式默认为空，此时日志只输出到控制台，显式配置则同时输出到日志文件与控制台。
-- LogFileNamePrefix : `zcgolog`，日志文件命名约定: `[LogFileNamePrefix]_[年月日]_[%05d].log`，例如: `zcgolog_20220507_00001.log`，只在LogFileDir非空时有效。
-- LogForbidStdout : `false`, 是否禁止输出到控制台。
-- LogLevelGlobal : `LOG_LEVEL_DEBUG`,int类型，值为1。目前支持的日志级别:LOG_LEVEL_DEBUG,LOG_LEVEL_INFO,LOG_LEVEL_WARNING,LOG_LEVEL_ERROR,LOG_LEVEL_PANIC,LOG_LEVEL_FATAL,对应的数值从1到6。
-- LogLineFormat : "%level %pushTime %file %line %callFunc %msg"，目前日志格式固定，该配置暂时没有使用。
-- LogFileMaxSizeM : `2`，单个日志文件最大Size，在服务器模式下，日志文件以天为单位滚动，当天日志文件到达上限时再次滚动，文件名最后的序号+1。每天最多允许滚动99999个日志文件。仅在服务器模式下支持。
-- LogChannelCap : `4096`,int类型，日志缓冲通道的容量，可以根据实际情况调整。仅在服务器模式下支持。
-- LogChnOverPolicy : `LOG_CHN_OVER_POLICY_DISCARD`,int类型，值为1。日志缓冲通道已满时的日志处理策略，默认策略是丢弃该条日志(但会输出到控制台)，另一个策略是`LOG_CHN_OVER_POLICY_BLOCK`，阻塞等待。两种策略都不是很理想，一般还是调大LogChannelCap确保通道不会被打满。以后考虑添加新的策略，例如直接输出到fallback的输出流。仅在服务器模式下支持。
-- LogLevelCtlHost : `localhost`，日志级别调整监听服务的Host，可根据实际情况调整。仅在服务器模式下支持。
-- LogLevelCtlPort ： `9300`，日志级别调整监听服务的端口，可根据实际情况调整。仅在服务器模式下支持。
+## 配置及其默认值
+各个配置的说明以及默认值如下:
+- LogMod : 日志模式，默认值`LOG_MODE_LOCAL`,int类型，值为1,目前支持 本地模式(LOG_MODE_LOCAL:1) 与 服务器模式(LOG_MODE_SERVER:2)。
+- LogFileDir : 日志文件目录。服务器模式下必须显式配置一个非空目录，没有默认值。本地模式下默认为空，此时日志只输出到控制台，显式配置则同时输出到日志文件与控制台。
+- LogFileNamePrefix : 日志文件名前缀，默认值`zcgolog`。完整的日志文件命名约定: `[LogFileNamePrefix]_[年月日]_[%05d].log`，例如: `zcgolog_20220507_00001.log`，只在LogFileDir非空时有效。
+- LogForbidStdout :  是否禁止输出到控制台，默认值`false`。
+- LogLevelGlobal : 全局日志级别，默认值`LOG_LEVEL_INFO`,int类型，值为2。目前支持的日志级别:LOG_LEVEL_DEBUG,LOG_LEVEL_INFO,LOG_LEVEL_WARNING,LOG_LEVEL_ERROR,LOG_LEVEL_PANIC,LOG_LEVEL_FATAL,对应的数值从1到6。具体每个日志级别的说明，参考后续的`支持的日志级别`。
+- LogLineFormat : 日志格式，目前日志格式固定，该配置暂时没有使用。
+- LogFileMaxSizeM : 单个日志文件Size上限(单位:M)，默认值`2`。在服务器模式下，日志文件以天为单位滚动，当天日志文件到达上限时再次滚动，文件名最后的序号+1。每天最多允许滚动99999个日志文件。仅在服务器模式下支持。
+- LogChannelCap : 日志缓冲通道的容量，默认值`4096`,int类型，可以根据实际情况调整，尤其日志输出并发较高时请将该值调大。仅在服务器模式下支持。
+- LogChnOverPolicy : 日志缓冲通道已满时的日志处理策略，默认值`LOG_CHN_OVER_POLICY_DISCARD`,int类型，值为1。默认策略是丢弃该条日志(但会输出到控制台)，另一个策略是`LOG_CHN_OVER_POLICY_BLOCK`，阻塞等待。两种策略都不是很理想，一般还是调大LogChannelCap确保通道不会被打满。仅在服务器模式下支持。
+- LogLevelCtlHost : 日志级别调整监听服务的Host，默认为空，即监听程序主机的各个IP。可根据实际需要调整，比如配置为`localhost`时将只能在程序主机本地访问，其他网络地址无法访问到该服务。仅在服务器模式下支持。
+- LogLevelCtlPort ： 日志级别调整监听服务的端口，默认值`9300`。可根据实际情况调整。仅在服务器模式下支持。
 
 ## 支持的日志级别
 ```go
@@ -181,9 +181,10 @@ goos: linux
 goarch: amd64
 pkg: gitee.com/zhaochuninhefei/zcgolog/benchtest
 cpu: 12th Gen Intel(R) Core(TM) i7-12700H
-BenchmarkLogServer-20    	 1871665	       595.7 ns/op	     455 B/op	       6 allocs/op
-BenchmarkLogLocal-20    	  482731	      2458 ns/op	     896 B/op	      10 allocs/op
-BenchmarkLogGolang-20    	  991264	      1204 ns/op	      39 B/op	       1 allocs/op
+BenchmarkLogServer-20    	 1960144	       587.0 ns/op	     441 B/op	       6 allocs/op
+BenchmarkLogLocal-20     	  566115	      2121 ns/op	     896 B/op	       9 allocs/op
+BenchmarkLogGolang-20    	 1000000	      1090 ns/op	      39 B/op	       1 allocs/op
 ```
-> BenchmarkLogServer是服务器模式，BenchmarkLogLocal是本地模式，BenchmarkLogGolang是直接使用golang原生log包。
+
+> BenchmarkLogServer:服务器模式; BenchmarkLogLocal:本地模式; BenchmarkLogGolang:直接使用golang原生log包。
 

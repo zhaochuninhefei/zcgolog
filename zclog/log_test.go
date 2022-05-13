@@ -29,9 +29,9 @@ func TestServerLog(t *testing.T) {
 		LogLevelGlobal: LOG_LEVEL_INFO,
 	}
 	InitLogger(logConfig)
-	time.Sleep(3 * time.Second)
+	time.Sleep(time.Second)
 	go writeLog()
-	time.Sleep(3 * time.Second)
+	time.Sleep(time.Second)
 	<-end
 }
 
@@ -126,7 +126,6 @@ func writeLog() {
 
 func TestServerLogScroll(t *testing.T) {
 	fmt.Println("----- testServerLogScroll -----")
-	// fmt.Println("msgReaderRunning:", msgReaderRunning)
 	end = make(chan bool, 64)
 	logConfig := &Config{
 		LogForbidStdout: true,
@@ -137,11 +136,11 @@ func TestServerLogScroll(t *testing.T) {
 		LogChannelCap:   40960,
 	}
 	InitLogger(logConfig)
-	// fmt.Println("msgReaderRunning:", msgReaderRunning)
-	time.Sleep(3 * time.Second)
+	time.Sleep(1 * time.Second)
 	go writeLog10000()
-	time.Sleep(3 * time.Second)
+	time.Sleep(1 * time.Second)
 	<-end
+	QuitMsgReader(1000)
 }
 
 func writeLog10000() {
