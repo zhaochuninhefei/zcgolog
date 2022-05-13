@@ -19,7 +19,6 @@ import (
 	"log"
 	"os"
 	"runtime"
-	"sync"
 	"time"
 )
 
@@ -90,7 +89,19 @@ type Config struct {
 var zcgoLogger *log.Logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 // zcgolog配置
-var zcgologConfig *Config
+var zcgologConfig *Config = &Config{
+	LogForbidStdout:   false,
+	LogFileDir:        "",
+	LogFileNamePrefix: "zcgolog",
+	LogFileMaxSizeM:   2,
+	LogLevelGlobal:    LOG_LEVEL_INFO,
+	LogLineFormat:     "%level %pushTime %file %line %callFunc %msg",
+	LogChannelCap:     4096,
+	LogChnOverPolicy:  LOG_CHN_OVER_POLICY_DISCARD,
+	LogMod:            LOG_MODE_LOCAL,
+	LogLevelCtlHost:   "",
+	LogLevelCtlPort:   "9300",
+}
 
 // 当前日志文件
 var currentLogFile *os.File
@@ -107,8 +118,6 @@ var currentLogYMD string
 
 // 初始化zcgolog
 func InitLogger(initConfig *Config) {
-	// 初始化默认配置(只会执行一次)
-	initDefaultLogConfigOnce.Do(initDefaultLogConfig)
 	// 从参数中获取有效配置覆盖logConfig
 	if initConfig != nil {
 		if initConfig.LogForbidStdout {
@@ -155,25 +164,6 @@ func InitLogger(initConfig *Config) {
 	case LOG_MODE_LOCAL:
 		// 初始化zcgoLogger
 		initZcgoLogger()
-	}
-}
-
-var initDefaultLogConfigOnce sync.Once
-
-// 初始化默认日志配置
-func initDefaultLogConfig() {
-	zcgologConfig = &Config{
-		LogForbidStdout:   false,
-		LogFileDir:        "",
-		LogFileNamePrefix: "zcgolog",
-		LogFileMaxSizeM:   2,
-		LogLevelGlobal:    LOG_LEVEL_INFO,
-		LogLineFormat:     "%level %pushTime %file %line %callFunc %msg",
-		LogChannelCap:     4096,
-		LogChnOverPolicy:  LOG_CHN_OVER_POLICY_DISCARD,
-		LogMod:            LOG_MODE_LOCAL,
-		LogLevelCtlHost:   "",
-		LogLevelCtlPort:   "9300",
 	}
 }
 

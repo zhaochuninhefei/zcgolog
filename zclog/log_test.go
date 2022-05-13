@@ -161,21 +161,28 @@ func TestLocalLogDefault(t *testing.T) {
 	ClearDir("testdata/locallogs")
 	for i := 0; i < 100; i++ {
 		// 本地模式下，中途改变日志配置
-		// 21开始日志级别调整为DEBUG，debug日志可以输出
+		// 21开始日志级别调整为WARNING，info日志不输出
 		if i == 20 {
+			logConfig := &Config{
+				LogLevelGlobal: LOG_LEVEL_WARNING,
+			}
+			InitLogger(logConfig)
+		}
+		// 41开始日志级别调整为DEBUG,info日志输出
+		if i == 40 {
 			logConfig := &Config{
 				LogLevelGlobal: LOG_LEVEL_DEBUG,
 			}
 			InitLogger(logConfig)
 		}
 		// 51开始设置日志文件目录，日志开始同时输出在控制台和日志文件
-		if i == 50 {
+		if i == 60 {
 			logConfig := &Config{
 				LogFileDir: "testdata/locallogs",
 			}
 			InitLogger(logConfig)
 		}
-		Debugf("测试写入日志: %d", i+1)
+		Infof("测试写入日志: %d", i+1)
 	}
 }
 

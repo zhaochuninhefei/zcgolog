@@ -19,7 +19,6 @@ import (
 )
 
 func TestFirstLog(t *testing.T) {
-	initDefaultLogConfig()
 	zcgologConfig.LogFileDir = "testdata/firstlog/"
 	logFileName, _, err := GetLogFilePathAndYMDToday(zcgologConfig)
 	if err != nil {
@@ -47,7 +46,6 @@ func TestLastLog(t *testing.T) {
 	fileState, _ := os.Stat(logLast)
 	fmt.Printf("logLast文件大小: %d\n", fileState.Size())
 
-	initDefaultLogConfig()
 	zcgologConfig.LogFileDir = "testdata/lastlog/"
 	zcgologConfig.LogFileMaxSizeM = 1
 	logFileName, _, err := GetLogFilePathAndYMDToday(zcgologConfig)
