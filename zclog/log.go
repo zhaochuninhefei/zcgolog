@@ -22,34 +22,6 @@ import (
 	"time"
 )
 
-// 日志级别定义
-const (
-	// debug 调试日志，生产环境通常关闭
-	LOG_LEVEL_DEBUG = iota + 1
-	// info 重要信息日志，用于提示程序过程中的一些重要信息，慎用，避免过多的INFO日志
-	LOG_LEVEL_INFO
-	// warning 警告日志，用于警告用户可能会发生问题
-	LOG_LEVEL_WARNING
-	// error 一般错误日志，一般用于提示业务错误，程序通常不会因为这样的错误终止
-	LOG_LEVEL_ERROR
-	// panic 异常错误日志，一般用于预期外的错误，程序的当前Goroutine会终止并输出堆栈信息
-	LOG_LEVEL_PANIC
-	// fatal 致命错误日志，程序会马上终止
-	LOG_LEVEL_FATAL
-	// 日志级别最大值，用于内部判断日志级别是否在合法范围内
-	log_level_max
-)
-
-// 日志级别文字定义
-var LogLevels = [...]string{
-	LOG_LEVEL_DEBUG:   "[DEBUG]",
-	LOG_LEVEL_INFO:    "[ INFO]",
-	LOG_LEVEL_WARNING: "[ WARN]",
-	LOG_LEVEL_ERROR:   "[ERROR]",
-	LOG_LEVEL_PANIC:   "[PANIC]",
-	LOG_LEVEL_FATAL:   "[FATAL]",
-}
-
 // 日志模式定义
 const (
 	// 本地模式: 日志同步输出且不支持在线修改指定logger的日志级别，日志文件不支持自动滚动，通常仅用于测试

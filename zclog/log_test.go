@@ -24,9 +24,10 @@ func TestServerLog(t *testing.T) {
 	ClearDir("testdata/serverlogs")
 	end = make(chan bool, 64)
 	logConfig := &Config{
-		LogFileDir:     "testdata/serverlogs",
-		LogMod:         LOG_MODE_SERVER,
-		LogLevelGlobal: LOG_LEVEL_INFO,
+		LogFileDir:      "testdata/serverlogs",
+		LogMod:          LOG_MODE_SERVER,
+		LogLevelGlobal:  LOG_LEVEL_INFO,
+		LogLevelCtlPort: "19300",
 	}
 	InitLogger(logConfig)
 	time.Sleep(time.Second)
@@ -45,7 +46,7 @@ func writeLog() {
 	for i := 0; i < 100; i++ {
 		if i == 15 {
 			// 从16开始，控制全局日志级别为ERROR
-			resp, err := http.Get("http://localhost:9300/zcgolog/api/level/global?level=4")
+			resp, err := http.Get("http://localhost:19300/zcgolog/api/level/global?level=4")
 			if err != nil {
 				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
 			} else {
@@ -54,7 +55,7 @@ func writeLog() {
 		}
 		if i == 30 {
 			// 从31开始，控制全局日志级别为INFO
-			resp, err := http.Get("http://localhost:9300/zcgolog/api/level/global?level=2")
+			resp, err := http.Get("http://localhost:19300/zcgolog/api/level/global?level=2")
 			if err != nil {
 				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
 			} else {
@@ -63,7 +64,7 @@ func writeLog() {
 		}
 		if i == 45 {
 			// 从46开始，控制本函数的日志级别为DEBUG
-			resp, err := http.Get("http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=1")
+			resp, err := http.Get("http://localhost:19300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=1")
 			if err != nil {
 				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
 			} else {
@@ -72,7 +73,7 @@ func writeLog() {
 		}
 		if i == 60 {
 			// 从61开始，控制本函数的日志级别为WARN
-			resp, err := http.Get("http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=3")
+			resp, err := http.Get("http://localhost:19300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=3")
 			if err != nil {
 				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
 			} else {
@@ -81,7 +82,7 @@ func writeLog() {
 		}
 		if i == 75 {
 			// 从76开始，尝试控制本函数的日志级别为无效数值，此时目标函数将采用全局日志级别
-			resp, err := http.Get("http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=7")
+			resp, err := http.Get("http://localhost:19300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=7")
 			if err != nil {
 				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
 			} else {
@@ -134,6 +135,7 @@ func TestServerLogScroll(t *testing.T) {
 		LogLevelGlobal:  LOG_LEVEL_DEBUG,
 		LogFileMaxSizeM: 1,
 		LogChannelCap:   40960,
+		LogLevelCtlPort: "19300",
 	}
 	InitLogger(logConfig)
 	time.Sleep(1 * time.Second)
@@ -204,4 +206,40 @@ func TestLocalLog(t *testing.T) {
 func TestClearLogs(t *testing.T) {
 	ClearDir("testdata/locallogs")
 	ClearDir("testdata/serverlogs")
+}
+
+func TestLogLevel(t *testing.T) {
+	fmt.Println("debug :", LogLevels[LOG_LEVEL_DEBUG])
+	fmt.Println("fatal :", LogLevels[LOG_LEVEL_FATAL])
+	fmt.Println("critical :", LogLevels[LOG_LEVEL_CRITICAL])
+
+	logLevel := GetLogLevelByStr("debug")
+	if logLevel != LOG_LEVEL_DEBUG {
+		t.Fatal("debug未能获取对应日志级别")
+	}
+	fmt.Println("debug获取到日志级别:", logLevel)
+
+	logLevel = GetLogLevelByStr("warn")
+	if logLevel != LOG_LEVEL_WARNING {
+		t.Fatal("warn未能获取对应日志级别")
+	}
+	fmt.Println("warn获取到日志级别:", logLevel)
+
+	logLevel = GetLogLevelByStr("warning")
+	if logLevel != LOG_LEVEL_WARNING {
+		t.Fatal("warning未能获取对应日志级别")
+	}
+	fmt.Println("warning获取到日志级别:", logLevel)
+
+	logLevel = GetLogLevelByStr("fatal")
+	if logLevel != LOG_LEVEL_FATAL {
+		t.Fatal("fatal未能获取对应日志级别")
+	}
+	fmt.Println("fatal获取到日志级别:", logLevel)
+
+	logLevel = GetLogLevelByStr("critical")
+	if logLevel != LOG_LEVEL_CRITICAL {
+		t.Fatal("critical未能获取对应日志级别")
+	}
+	fmt.Println("critical获取到日志级别:", logLevel)
 }

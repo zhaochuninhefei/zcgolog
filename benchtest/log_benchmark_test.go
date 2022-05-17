@@ -64,6 +64,7 @@ func setupServer() {
 		LogChnOverPolicy: zlog.LOG_CHN_OVER_POLICY_BLOCK,
 		LogFileMaxSizeM:  100,
 		LogChannelCap:    4096000,
+		LogLevelCtlPort:  "19300",
 	}
 	zlog.InitLogger(logConfig)
 	time.Sleep(3 * time.Second)
