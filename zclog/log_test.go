@@ -12,9 +12,16 @@ package zclog
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
+)
+
+const (
+	log_ctl_server_address         = "http://localhost:19300"
+	log_ctl_uri_level_query        = "/zcgolog/api/level/query"
+	log_ctl_uri_level_query_logger = "/zcgolog/api/level/query?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog"
 )
 
 var end chan bool
@@ -37,6 +44,8 @@ func TestServerLog(t *testing.T) {
 }
 
 func writeLog() {
+	// 查看当前日志级别
+	showLogLevelNow()
 	// 1~15 输出INFO以上日志
 	// 16~30 输出ERROR以上日志
 	// 31~45 输出INFO以上日志
@@ -46,48 +55,23 @@ func writeLog() {
 	for i := 0; i < 100; i++ {
 		if i == 15 {
 			// 从16开始，控制全局日志级别为ERROR
-			resp, err := http.Get("http://localhost:19300/zcgolog/api/level/global?level=4")
-			if err != nil {
-				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
-			} else {
-				fmt.Printf("请求zcgolog/level/ctl返回: %v\n", resp)
-			}
+			changeLogLevel("/zcgolog/api/level/global?level=4")
 		}
 		if i == 30 {
 			// 从31开始，控制全局日志级别为INFO
-			resp, err := http.Get("http://localhost:19300/zcgolog/api/level/global?level=2")
-			if err != nil {
-				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
-			} else {
-				fmt.Printf("请求zcgolog/level/ctl返回: %v\n", resp)
-			}
+			changeLogLevel("/zcgolog/api/level/global?level=2")
 		}
 		if i == 45 {
 			// 从46开始，控制本函数的日志级别为DEBUG
-			resp, err := http.Get("http://localhost:19300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=1")
-			if err != nil {
-				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
-			} else {
-				fmt.Printf("请求zcgolog/level/ctl返回: %v\n", resp)
-			}
+			changeLogLevel("/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=1")
 		}
 		if i == 60 {
 			// 从61开始，控制本函数的日志级别为WARN
-			resp, err := http.Get("http://localhost:19300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=3")
-			if err != nil {
-				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
-			} else {
-				fmt.Printf("请求zcgolog/level/ctl返回: %v\n", resp)
-			}
+			changeLogLevel("/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=3")
 		}
 		if i == 75 {
 			// 从76开始，尝试控制本函数的日志级别为无效数值，此时目标函数将采用全局日志级别
-			resp, err := http.Get("http://localhost:19300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=7")
-			if err != nil {
-				fmt.Printf("请求zcgolog/level/ctl返回错误: %s\n", err)
-			} else {
-				fmt.Printf("请求zcgolog/level/ctl返回: %v\n", resp)
-			}
+			changeLogLevel("/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/zclog.writeLog&level=7")
 		}
 		switch (i + 1) % 15 {
 		case 1:
@@ -123,6 +107,38 @@ func writeLog() {
 		}
 	}
 	end <- true
+}
+
+func changeLogLevel(uri string) {
+	// uri := "/zcgolog/api/level/global?level=4"
+	resp, err := http.Get(log_ctl_server_address + uri)
+	if err != nil {
+		fmt.Printf("请求 %s 返回错误: %s\n", uri, err)
+	} else {
+		response, _ := ioutil.ReadAll(resp.Body)
+		fmt.Printf("请求 %s 返回: %s\n", uri, response)
+		// 查看当前日志级别
+		showLogLevelNow()
+	}
+}
+
+func showLogLevelNow() {
+	// 查看当前全局日志级别
+	resp, err := http.Get(log_ctl_server_address + log_ctl_uri_level_query)
+	if err != nil {
+		fmt.Printf("请求 %s 返回错误: %s\n", log_ctl_uri_level_query, err)
+	} else {
+		response, _ := ioutil.ReadAll(resp.Body)
+		fmt.Printf("===== 当前全局日志级别: %s\n", response)
+	}
+	// 查看指定logger的日志级别
+	resp, err = http.Get(log_ctl_server_address + log_ctl_uri_level_query_logger)
+	if err != nil {
+		fmt.Printf("请求 %s 返回错误: %s\n", log_ctl_uri_level_query_logger, err)
+	} else {
+		response, _ := ioutil.ReadAll(resp.Body)
+		fmt.Printf("===== 当前指定logger日志级别: %s\n", response)
+	}
 }
 
 func TestServerLogScroll(t *testing.T) {

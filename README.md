@@ -59,7 +59,7 @@ func initZcgolog() {
 }
 ```
 
-其他相关配置的默认值参考`配置默认值`一节。
+其他相关配置的默认值参考`配置及其默认值`一节。
 
 服务器模式下日志输出格式:
 ```
@@ -79,20 +79,32 @@ zcgolog在服务器模式下提供了在线修改日志级别的httpAPI，无需
 ```sh
 # 修改全局日志级别
 # 如果level传入[1~6]以外的值，则全局日志级别恢复为启动时的配置
+# 修改成功返回 "操作成功"
 curl "http://localhost:9300/zcgolog/api/level/global?level=1"
 
 # 修改指定函数的日志级别
 # 如果level传入[1~6]以外的值，则作为0处理，该函数的日志级别将采用全局日志级别
+# 修改成功返回 "操作成功"
 curl "http://localhost:9300/zcgolog/api/level/ctl?logger=gitee.com/zhaochuninhefei/zcgolog/log.writeLog&level=1"
+
+# 查看全局日志级别
+# 返回值是日志级别对应的字符串，如 "debug","info","warning","error","panic","fatal"
+curl "http://localhost:9300/zcgolog/api/level/query"
+
+# 查看指定函数的日志级别
+# 返回值是日志级别对应的字符串，如 "debug","info","warning","error","panic","fatal"
+curl "http://localhost:9300/zcgolog/api/level/query?logger=gitee.com/zhaochuninhefei/zcgolog/log.writeLog"
 ```
 
-说明:
-- host与port : 根据配置确定，默认是`localhost:9300`
-- uri : `/zcgolog/api/level/ctl`
-- URL参数 : logger和level。logger是调整目标，对应具体函数的完整包名路径，如: `gitee.com/zhaochuninhefei/zcgolog/log.writeLog`；level是调整后的日志级别，支持从1到6，分别是DEBUG,INFO,WARNNING,ERROR,PANIC,FATAL。
+zcgolog的在线日志级别调整与查看的HttpAPI列表:
 
-修改成功后会返回消息:`操作成功`。
+| uri | URL参数 | 用途 |
+| --- | --- | --- |
+| /zcgolog/api/level/ctl | logger和level。logger是调整目标，对应具体函数的完整包名路径，如: `gitee.com/zhaochuninhefei/zcgolog/log.writeLog`；level是调整后的日志级别，支持从1到6，分别是DEBUG,INFO,WARNNING,ERROR,PANIC,FATAL。 | 用于在线修改目标函数的日志级别。 |
+| /zcgolog/api/level/global | level,指定全局日志级别 | 用于在线修改全局日志级别。 |
+| /zcgolog/api/level/query | logger,指定需要查看日志级别的目标函数,不传参数代表查看全局日志级别。 | 用于查看全局或指定函数的日志级别。 |
 
+> HttpAPI的host与port根据配置确定，默认是`:9300`，具体配置参见后续的`配置及其默认值`一节。
 
 ## 本地模式
 本地模式无需额外配置，当然也支持自定义配置，方法与服务器模式一样，注意`LogMod`采用默认值，或配置为`log.LOG_MODE_LOCAL`。

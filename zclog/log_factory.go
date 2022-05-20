@@ -24,6 +24,7 @@ import (
 var loggerLock sync.Mutex
 
 // 初始化zcgoLogger
+//  设置zcgoLogger的输出目标与日志前缀格式
 func initZcgoLogger() {
 	// 停止日志缓冲通道监听
 	// 防止应用程序在已经开启服务器模式后，刷新logger配置时与日志缓冲通道监听处理(readAndWriteMsg)中对日志文件的处理发生冲突。
@@ -42,9 +43,6 @@ func initZcgoLogger() {
 	closeCurrentLogFile()
 	// 获取最新日志文件
 	logFilePath, todayYMD, err := GetLogFilePathAndYMDToday(zcgologConfig)
-	// // 根据initType做不同场景的logger初始化
-	// switch initType {
-	// case logger_init_type_local:
 	if err != nil {
 		// 未能成功获取日志文件时，直接输出到控制台
 		currentLogYMD = getYMDToday()
