@@ -98,11 +98,11 @@ curl "http://localhost:9300/zcgolog/api/level/query?logger=gitee.com/zhaochuninh
 
 zcgolog的在线日志级别调整与查看的HttpAPI列表:
 
-| uri | URL参数 | 用途 |
-| --- | --- | --- |
-| /zcgolog/api/level/ctl | logger和level。logger是调整目标，对应具体函数的完整包名路径，如: `gitee.com/zhaochuninhefei/zcgolog/log.writeLog`；level是调整后的日志级别，支持从1到6，分别是DEBUG,INFO,WARNNING,ERROR,PANIC,FATAL。 | 用于在线修改目标函数的日志级别。 |
-| /zcgolog/api/level/global | level,指定全局日志级别 | 用于在线修改全局日志级别。 |
-| /zcgolog/api/level/query | logger,指定需要查看日志级别的目标函数,不传参数代表查看全局日志级别。 | 用于查看全局或指定函数的日志级别。 |
+| uri | 用途与URL参数 |
+| --- | --- |
+| /zcgolog/api/level/ctl | 用于在线修改目标函数的日志级别。url参数:logger和level。logger是调整目标，对应具体函数的完整包名路径，如: `gitee.com/zhaochuninhefei/zcgolog/log.writeLog`；level是调整后的日志级别，支持从1到6，分别是DEBUG,INFO,WARNNING,ERROR,PANIC,FATAL。 |
+| /zcgolog/api/level/global | 用于在线修改全局日志级别。URL参数:level,指定全局日志级别 |
+| /zcgolog/api/level/query | 用于查看全局或指定函数的日志级别。URL参数:logger,指定需要查看日志级别的目标函数,不传参数代表查看全局日志级别。 |
 
 > HttpAPI的host与port根据配置确定，默认是`:9300`，具体配置参见后续的`配置及其默认值`一节。
 
