@@ -200,3 +200,7 @@ BenchmarkLogGolang-20    	 1000000	      1090 ns/op	      39 B/op	       1 alloc
 
 > BenchmarkLogServer:服务器模式; BenchmarkLogLocal:本地模式; BenchmarkLogGolang:直接使用golang原生log包。
 
+# JetBrains support
+Thanks to JetBrains for supporting open source projects.
+
+<a href="https://jb.gg/OpenSourceSupport" target="_blank">https://jb.gg/OpenSourceSupport.</a>
