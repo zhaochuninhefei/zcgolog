@@ -107,36 +107,42 @@ func Errorln(v ...interface{}) {
 }
 
 // Panic 直接输出日志，终止当前goroutine
+//goland:noinspection GoUnusedExportedFunction
 func Panic(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_PANIC
 	outputLog(msgLogLevel, fmt.Sprint(v...))
 }
 
 // Panicf 直接输出日志，终止当前goroutine
+//goland:noinspection GoUnusedExportedFunction
 func Panicf(msg string, params ...interface{}) {
 	msgLogLevel := LOG_LEVEL_PANIC
 	outputLog(msgLogLevel, msg, params...)
 }
 
 // Panicln 直接输出日志，终止当前goroutine
+//goland:noinspection GoUnusedExportedFunction
 func Panicln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_PANIC
 	outputLog(msgLogLevel, fmt.Sprint(v...))
 }
 
 // Fatal 直接输出日志，终止程序
+//goland:noinspection GoUnusedExportedFunction
 func Fatal(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_FATAL
 	outputLog(msgLogLevel, fmt.Sprint(v...))
 }
 
 // Fatalf 直接输出日志，终止程序
+//goland:noinspection GoUnusedExportedFunction
 func Fatalf(msg string, params ...interface{}) {
 	msgLogLevel := LOG_LEVEL_FATAL
 	outputLog(msgLogLevel, msg, params...)
 }
 
 // Fatalln 直接输出日志，终止程序
+//goland:noinspection GoUnusedExportedFunction
 func Fatalln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_FATAL
 	outputLog(msgLogLevel, fmt.Sprint(v...))
