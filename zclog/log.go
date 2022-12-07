@@ -23,15 +23,16 @@ import (
 )
 
 // 日志模式定义
+//goland:noinspection GoSnakeCaseUsage
 const (
-	// 本地模式: 日志同步输出且不支持在线修改指定logger的日志级别，日志文件不支持自动滚动，通常仅用于测试
+	// LOG_MODE_LOCAL 本地模式: 日志同步输出且不支持在线修改指定logger的日志级别，日志文件不支持自动滚动，通常仅用于测试
 	LOG_MODE_LOCAL = iota + 1
-	// 服务器模式: 日志异步输出且支持在线修改指定logger的日志级别，日志文件支持自动滚动
+	// LOG_MODE_SERVER 服务器模式: 日志异步输出且支持在线修改指定logger的日志级别，日志文件支持自动滚动
 	LOG_MODE_SERVER
 	log_mode_max
 )
 
-// 日志配置
+// Config 日志配置
 type Config struct {
 	// 是否需要禁止输出到控制台，默认: false
 	LogForbidStdout bool
@@ -58,10 +59,10 @@ type Config struct {
 }
 
 // zcgoLogger
-var zcgoLogger *log.Logger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
+var zcgoLogger = log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
 // zcgolog配置
-var zcgologConfig *Config = &Config{
+var zcgologConfig = &Config{
 	LogForbidStdout:   false,
 	LogFileDir:        "",
 	LogFileNamePrefix: "zcgolog",
@@ -81,14 +82,17 @@ var currentLogFile *os.File
 // 关闭当前日志文件
 func closeCurrentLogFile() {
 	if currentLogFile != nil {
-		currentLogFile.Close()
+		err := currentLogFile.Close()
+		if err != nil {
+			return
+		}
 	}
 }
 
 // 当天日期
 var currentLogYMD string
 
-// 初始化zcgolog
+// InitLogger 初始化zcgolog
 func InitLogger(initConfig *Config) {
 	// 从参数中获取有效配置覆盖logConfig
 	if initConfig != nil {
