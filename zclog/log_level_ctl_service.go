@@ -123,6 +123,7 @@ func runLogCtlServe() {
 	http.HandleFunc("/zcgolog/api/level/ctl", handleLogLevelCtl)
 	http.HandleFunc("/zcgolog/api/level/global", handleLogLevelCtlGlobal)
 	http.HandleFunc("/zcgolog/api/level/query", handleLogLevelQuery)
+	//goland:noinspection HttpUrlsUsage
 	Infof("启动日志级别控制监听服务: [http://%s/zcgolog/api/level/**]", listenAddress)
 	zcgoLogger.Fatal(http.ListenAndServe(listenAddress, nil))
 }
