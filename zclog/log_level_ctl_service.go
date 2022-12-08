@@ -16,6 +16,7 @@ zclog/log_level_ctl_service.go 日志级别控制服务，提供httpAPI来在线
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -37,14 +38,26 @@ func handleLogLevelCtl(w http.ResponseWriter, req *http.Request) {
 	level := query.Get("level")
 	targetLevel, err := strconv.Atoi(level)
 	if err != nil {
-		fmt.Fprintf(w, "发生错误: %s\n", err)
+		_, err := fmt.Fprintf(w, "发生错误: %s\n", err)
+		if err != nil {
+			log.Printf("发生预期外错误: %s", err)
+			return
+		}
 	} else {
 		if targetLevel >= LOG_LEVEL_DEBUG && targetLevel < log_level_max {
 			logLevelCtl[logger] = targetLevel
-			fmt.Fprintf(w, "操作成功\n")
+			_, err := fmt.Fprintf(w, "操作成功\n")
+			if err != nil {
+				log.Printf("发生预期外错误: %s", err)
+				return
+			}
 		} else {
 			logLevelCtl[logger] = 0
-			fmt.Fprintf(w, "传入的level不在有效范围,目标函数仍采取全局日志级别\n")
+			_, err := fmt.Fprintf(w, "传入的level不在有效范围,目标函数仍采取全局日志级别\n")
+			if err != nil {
+				log.Printf("发生预期外错误: %s", err)
+				return
+			}
 		}
 	}
 }
@@ -55,14 +68,26 @@ func handleLogLevelCtlGlobal(w http.ResponseWriter, req *http.Request) {
 	level := query.Get("level")
 	targetLevel, err := strconv.Atoi(level)
 	if err != nil {
-		fmt.Fprintf(w, "发生错误: %s\n", err)
+		_, err := fmt.Fprintf(w, "发生错误: %s\n", err)
+		if err != nil {
+			log.Printf("发生预期外错误: %s", err)
+			return
+		}
 	} else {
 		if targetLevel >= LOG_LEVEL_DEBUG && targetLevel < log_level_max {
 			Level = targetLevel
-			fmt.Fprintf(w, "操作成功\n")
+			_, err := fmt.Fprintf(w, "操作成功\n")
+			if err != nil {
+				log.Printf("发生预期外错误: %s", err)
+				return
+			}
 		} else {
 			Level = zcgologConfig.LogLevelGlobal
-			fmt.Fprintf(w, "传入的level不在有效范围,全局日志级别恢复为启动配置\n")
+			_, err := fmt.Fprintf(w, "传入的level不在有效范围,全局日志级别恢复为启动配置\n")
+			if err != nil {
+				log.Printf("发生预期外错误: %s", err)
+				return
+			}
 		}
 	}
 }
@@ -79,7 +104,11 @@ func handleLogLevelQuery(w http.ResponseWriter, req *http.Request) {
 		resultLevel = Level
 	}
 	result := GetLogLevelStrByInt(resultLevel)
-	fmt.Fprint(w, result)
+	_, err := fmt.Fprint(w, result)
+	if err != nil {
+		log.Printf("发生预期外错误: %s", err)
+		return
+	}
 }
 
 // 启动日志级别控制监听服务
