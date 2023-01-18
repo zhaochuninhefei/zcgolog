@@ -21,7 +21,10 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	zlog.ClearDir("testdata")
+	err := zlog.ClearDir("testdata")
+	if err != nil {
+		log.Fatal(err)
+	}
 	m.Run()
 }
 
@@ -55,7 +58,10 @@ func BenchmarkLogGolang(b *testing.B) {
 var setupServerOnce sync.Once
 
 func setupServer() {
-	zlog.ClearDir("testdata")
+	err := zlog.ClearDir("testdata")
+	if err != nil {
+		log.Fatal(err)
+	}
 	logConfig := &zlog.Config{
 		LogForbidStdout:  true,
 		LogFileDir:       "testdata",
@@ -74,7 +80,10 @@ func setupServer() {
 var setupLocalOnce sync.Once
 
 func setupLocal() {
-	zlog.ClearDir("testdata")
+	err := zlog.ClearDir("testdata")
+	if err != nil {
+		log.Fatal(err)
+	}
 	logConfig := &zlog.Config{
 		LogForbidStdout: true,
 		LogFileDir:      "testdata",
@@ -89,7 +98,10 @@ func setupLocal() {
 var setupGolangrOnce sync.Once
 
 func setupGolang() {
-	zlog.ClearDir("testdata")
+	err := zlog.ClearDir("testdata")
+	if err != nil {
+		log.Fatal(err)
+	}
 	currentLogFile, err := os.OpenFile("testdata/test.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
@@ -101,5 +113,8 @@ func setupGolang() {
 }
 
 func TestClearLogs(t *testing.T) {
-	zlog.ClearDir("testdata")
+	err := zlog.ClearDir("testdata")
+	if err != nil {
+		log.Fatal(err)
+	}
 }
