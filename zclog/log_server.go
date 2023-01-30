@@ -23,11 +23,13 @@ import (
 )
 
 // 日志缓冲通道填满后处理策略定义
+//goland:noinspection GoSnakeCaseUsage
 const (
-	// 丢弃该条日志
+	// LOG_CHN_OVER_POLICY_DISCARD 丢弃该条日志
 	LOG_CHN_OVER_POLICY_DISCARD = iota + 1
-	// 阻塞等待
+	// LOG_CHN_OVER_POLICY_BLOCK 阻塞等待
 	LOG_CHN_OVER_POLICY_BLOCK
+	// log_chn_over_policy_max 日志缓冲通道填满后处理策略定义值上限
 	log_chn_over_policy_max
 )
 
@@ -64,12 +66,12 @@ func startZcgologServer() {
 	go readAndWriteMsg()
 	// 等待日志级别控制监听服务启动，
 	// 防止runLogCtlServe执行时日志缓冲通道尚未初始化。
-	waitMsgReaderStart(3000)
+	_ = waitMsgReaderStart(3000)
 	// 启动日志级别控制监听服务
 	runLogCtlServeOnce.Do(startLogCtlServe)
 }
 
-// 停止对缓冲消息通道的监听
+// QuitMsgReader 停止对缓冲消息通道的监听
 //  timeoutMilliSec 超时时间(毫秒),该值<=0时表示会一直等待直到监听停止。
 func QuitMsgReader(timeoutMilliSec int) error {
 	if !msgReaderRunning {
@@ -112,7 +114,7 @@ func waitMsgReaderStart(timeoutMilliSec int) error {
 }
 
 var msgReaderLock sync.Mutex
-var msgReaderRunning bool = false
+var msgReaderRunning = false
 
 // 从日志缓冲通道拉取并输出日志
 func readAndWriteMsg() {
