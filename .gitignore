@@ -16,3 +16,4 @@
 .vscode/
 .idea/
 benchtest/testdata/*
+/zclog/testdata/serverlogs/zcgolog_20230202_00001.log

@@ -28,7 +28,10 @@ var end chan bool
 
 func TestServerLog(t *testing.T) {
 	fmt.Println("----- TestServerLog -----")
-	ClearDir("testdata/serverlogs")
+	err := ClearDir("testdata/serverlogs")
+	if err != nil {
+		t.Fatal(err)
+	}
 	end = make(chan bool, 64)
 	logConfig := &Config{
 		LogFileDir:      "testdata/serverlogs",
