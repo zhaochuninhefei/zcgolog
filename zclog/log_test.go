@@ -161,7 +161,10 @@ func TestServerLogScroll(t *testing.T) {
 	go writeLog10000()
 	time.Sleep(1 * time.Second)
 	<-end
-	QuitMsgReader(1000)
+	err := QuitMsgReader(1000)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func writeLog10000() {
@@ -179,7 +182,10 @@ func writeLog10000() {
 
 func TestLocalLogDefault(t *testing.T) {
 	fmt.Println("----- TestLocalLogDefault -----")
-	ClearDir("testdata/locallogs")
+	err := ClearDir("testdata/locallogs")
+	if err != nil {
+		t.Fatal(err)
+	}
 	for i := 0; i < 100; i++ {
 		// 本地模式下，中途改变日志配置
 		// 21开始日志级别调整为WARNING，info日志不输出
@@ -209,7 +215,10 @@ func TestLocalLogDefault(t *testing.T) {
 
 func TestLocalLog(t *testing.T) {
 	fmt.Println("----- TestLocalLog -----")
-	ClearDir("testdata/locallogs")
+	err := ClearDir("testdata/locallogs")
+	if err != nil {
+		t.Fatal(err)
+	}
 	// 在首次输出日志前设置日志目录:"testdata/locallogs"
 	logConfig := &Config{
 		LogFileDir:        "testdata/locallogs",
@@ -223,8 +232,14 @@ func TestLocalLog(t *testing.T) {
 }
 
 func TestClearLogs(t *testing.T) {
-	ClearDir("testdata/locallogs")
-	ClearDir("testdata/serverlogs")
+	err := ClearDir("testdata/locallogs")
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = ClearDir("testdata/serverlogs")
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestLogLevel(t *testing.T) {
