@@ -18,6 +18,7 @@ import (
 	"time"
 )
 
+//goland:noinspection GoSnakeCaseUsage
 const (
 	log_ctl_server_address         = "http://localhost:19300"
 	log_ctl_uri_level_query        = "/zcgolog/api/level/query"
