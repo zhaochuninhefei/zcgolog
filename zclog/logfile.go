@@ -45,7 +45,7 @@ func GetLogFilePathAndYMDToday(logConfig *Config) (string, string, error) {
 		return OS_OUT_STDOUT, getYMDToday(), nil
 	}
 	// 防止日志文件目录尚未创建
-	os.MkdirAll(logConfig.LogFileDir, os.ModePerm)
+	_ = os.MkdirAll(logConfig.LogFileDir, os.ModePerm)
 	// 读取日志目录下所有文件
 	files, err := ioutil.ReadDir(logConfig.LogFileDir)
 	if err != nil {
@@ -127,7 +127,7 @@ func ClearDir(dirPath string) error {
 		return err
 	}
 	for _, file := range files {
-		os.RemoveAll(path.Join(dirPath, file.Name()))
+		_ = os.RemoveAll(path.Join(dirPath, file.Name()))
 	}
 	return nil
 }
