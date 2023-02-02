@@ -24,6 +24,7 @@ import (
 	"time"
 )
 
+//goland:noinspection GoSnakeCaseUsage
 const (
 	OS_OUT_STDOUT = "OS.STDOUT"
 )
