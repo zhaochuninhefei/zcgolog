@@ -35,27 +35,27 @@ const (
 // Config 日志配置
 type Config struct {
 	// 是否需要禁止输出到控制台，默认: false
-	LogForbidStdout bool
+	LogForbidStdout bool `json:"log_forbid_stdout" yaml:"log_forbid_stdout" mapstructure:"log_forbid_stdout"`
 	// 日志文件目录，默认: 空，此时日志只输出到控制台
-	LogFileDir string
+	LogFileDir string `json:"log_file_dir" yaml:"log_file_dir" mapstructure:"log_file_dir"`
 	// 日志文件名前缀，默认: zcgolog
-	LogFileNamePrefix string
+	LogFileNamePrefix string `json:"log_file_name_prefix" yaml:"log_file_name_prefix" mapstructure:"log_file_name_prefix"`
 	// 日志文件大小上限，单位M，默认: 2
-	LogFileMaxSizeM int
+	LogFileMaxSizeM int `json:"log_file_max_size_m" yaml:"log_file_max_size_m" mapstructure:"log_file_max_size_m"`
 	// 全局日志级别，默认:INFO
-	LogLevelGlobal int
+	LogLevelGlobal int `json:"log_level_global" yaml:"log_level_global" mapstructure:"log_level_global"`
 	// 日志格式，默认: "%datetime %level %file %line %func %msg"，目前格式固定，该配置暂时没有使用
-	LogLineFormat string
+	LogLineFormat string `json:"log_line_format" yaml:"log_line_format" mapstructure:"log_line_format"`
 	// 日志模式，默认采用本地模式，以便于本地测试
-	LogMod int
+	LogMod int `json:"log_mod" yaml:"log_mod" mapstructure:"log_mod"`
 	// 日志缓冲通道容量，默认 4096
-	LogChannelCap int
+	LogChannelCap int `json:"log_channel_cap" yaml:"log_channel_cap" mapstructure:"log_channel_cap"`
 	// 日志缓冲通道填满后处理策略，默认:LOG_CHN_OVER_POLICY_DISCARD 丢弃该条日志
-	LogChnOverPolicy int
+	LogChnOverPolicy int `json:"log_chn_over_policy" yaml:"log_chn_over_policy" mapstructure:"log_chn_over_policy"`
 	// 日志级别控制监听服务的Host，默认:""
-	LogLevelCtlHost string
+	LogLevelCtlHost string `json:"log_level_ctl_host" yaml:"log_level_ctl_host" mapstructure:"log_level_ctl_host"`
 	// 日志级别控制监听服务的Port，默认:9300
-	LogLevelCtlPort string
+	LogLevelCtlPort string `json:"log_level_ctl_port" yaml:"log_level_ctl_port" mapstructure:"log_level_ctl_port"`
 }
 
 // zcgoLogger
