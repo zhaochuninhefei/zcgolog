@@ -14,7 +14,11 @@ package zclog
 zclog/api.go 提供zcgolog日志输出接口函数
 */
 
-import "fmt"
+import (
+	"fmt"
+	"runtime"
+	"strings"
+)
 
 // Print 日志级别: DEBUG
 func Print(v ...interface{}) {
@@ -52,6 +56,28 @@ func Debugln(v ...interface{}) {
 	outputLog(msgLogLevel, fmt.Sprint(v...))
 }
 
+// DebugStack 输出调用栈(DEBUG)
+func DebugStack(headMsg string) {
+	msgLogLevel := LOG_LEVEL_DEBUG
+	var pcs [32]uintptr
+	n := runtime.Callers(2, pcs[:]) // skip first 3 frames
+	frames := runtime.CallersFrames(pcs[:n])
+	var msgBuilder strings.Builder
+	if headMsg != "" {
+		msgBuilder.WriteString(headMsg)
+		msgBuilder.WriteString("\n")
+	}
+	msgBuilder.WriteString("当前调用栈如下:\n")
+	for {
+		frame, more := frames.Next()
+		msgBuilder.WriteString(fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function))
+		if !more {
+			break
+		}
+	}
+	outputLog(msgLogLevel, msgBuilder.String())
+}
+
 // Info 输出Info日志
 func Info(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_INFO
@@ -68,6 +94,28 @@ func Infof(msg string, params ...interface{}) {
 func Infoln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_INFO
 	outputLog(msgLogLevel, fmt.Sprint(v...))
+}
+
+// InfoStack 输出调用栈(INFO)
+func InfoStack(headMsg string) {
+	msgLogLevel := LOG_LEVEL_INFO
+	var pcs [32]uintptr
+	n := runtime.Callers(2, pcs[:]) // skip first 3 frames
+	frames := runtime.CallersFrames(pcs[:n])
+	var msgBuilder strings.Builder
+	if headMsg != "" {
+		msgBuilder.WriteString(headMsg)
+		msgBuilder.WriteString("\n")
+	}
+	msgBuilder.WriteString("当前调用栈如下:\n")
+	for {
+		frame, more := frames.Next()
+		msgBuilder.WriteString(fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function))
+		if !more {
+			break
+		}
+	}
+	outputLog(msgLogLevel, msgBuilder.String())
 }
 
 // Warn 输出Warn日志
@@ -88,6 +136,28 @@ func Warnln(v ...interface{}) {
 	outputLog(msgLogLevel, fmt.Sprint(v...))
 }
 
+// WarnStack 输出调用栈(WARNING)
+func WarnStack(headMsg string) {
+	msgLogLevel := LOG_LEVEL_WARNING
+	var pcs [32]uintptr
+	n := runtime.Callers(2, pcs[:]) // skip first 3 frames
+	frames := runtime.CallersFrames(pcs[:n])
+	var msgBuilder strings.Builder
+	if headMsg != "" {
+		msgBuilder.WriteString(headMsg)
+		msgBuilder.WriteString("\n")
+	}
+	msgBuilder.WriteString("当前调用栈如下:\n")
+	for {
+		frame, more := frames.Next()
+		msgBuilder.WriteString(fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function))
+		if !more {
+			break
+		}
+	}
+	outputLog(msgLogLevel, msgBuilder.String())
+}
+
 // Error 输出Error日志
 func Error(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_ERROR
@@ -104,6 +174,28 @@ func Errorf(msg string, params ...interface{}) {
 func Errorln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_ERROR
 	outputLog(msgLogLevel, fmt.Sprint(v...))
+}
+
+// ErrorStack 输出调用栈(ERROR)
+func ErrorStack(headMsg string) {
+	msgLogLevel := LOG_LEVEL_ERROR
+	var pcs [32]uintptr
+	n := runtime.Callers(2, pcs[:]) // skip first 3 frames
+	frames := runtime.CallersFrames(pcs[:n])
+	var msgBuilder strings.Builder
+	if headMsg != "" {
+		msgBuilder.WriteString(headMsg)
+		msgBuilder.WriteString("\n")
+	}
+	msgBuilder.WriteString("当前调用栈如下:\n")
+	for {
+		frame, more := frames.Next()
+		msgBuilder.WriteString(fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function))
+		if !more {
+			break
+		}
+	}
+	outputLog(msgLogLevel, msgBuilder.String())
 }
 
 // Panic 直接输出日志，终止当前goroutine

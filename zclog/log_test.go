@@ -86,24 +86,28 @@ func writeLog() {
 			Println("测试写入日志", i+1)
 		case 4:
 			Debug("测试写入日志", i+1)
+			DebugStack("测试写入调用栈")
 		case 5:
 			Debugf("测试写入日志: %d", i+1)
 		case 6:
 			Debugln("测试写入日志", i+1)
 		case 7:
 			Info("测试写入日志", i+1)
+			InfoStack("测试写入调用栈")
 		case 8:
 			Infof("测试写入日志: %d", i+1)
 		case 9:
 			Infoln("测试写入日志", i+1)
 		case 10:
 			Warn("测试写入日志", i+1)
+			WarnStack("测试写入调用栈")
 		case 11:
 			Warnf("测试写入日志: %d", i+1)
 		case 12:
 			Warnln("测试写入日志", i+1)
 		case 13:
 			Error("测试写入日志", i+1)
+			ErrorStack("测试写入调用栈")
 		case 14:
 			Errorf("测试写入日志: %d", i+1)
 		case 0:
