@@ -160,15 +160,19 @@ zcgolog的在线日志级别调整与查看的HttpAPI列表:
 | Debug | LOG_LEVEL_DEBUG | v ...interface{} | 参数直接拼接，末尾换行 |
 | Debugf | LOG_LEVEL_DEBUG | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
 | Debugln | LOG_LEVEL_DEBUG | v ...interface{} | 参数直接拼接，末尾换行 |
+| DebugStack | LOG_LEVEL_DEBUG | headMsg string | 输出调用栈(DEBUG) |
 | Info | LOG_LEVEL_INFO | v ...interface{} | 参数直接拼接，末尾换行 |
 | Infof | LOG_LEVEL_INFO | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
 | Infoln | LOG_LEVEL_INFO | v ...interface{} | 参数直接拼接，末尾换行 |
+| InfoStack | LOG_LEVEL_INFO | headMsg string | 输出调用栈(INFO) |
 | Warn | LOG_LEVEL_WARNING | v ...interface{} | 参数直接拼接，末尾换行 |
 | Warnf | LOG_LEVEL_WARNING | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
 | Warnln | LOG_LEVEL_WARNING | v ...interface{} | 参数直接拼接，末尾换行 |
+| WarnStack | LOG_LEVEL_WARNING | headMsg string | 输出调用栈(WARNING) |
 | Error | LOG_LEVEL_ERROR | v ...interface{} | 参数直接拼接，末尾换行 |
 | Errorf | LOG_LEVEL_ERROR | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
 | Errorln | LOG_LEVEL_ERROR | v ...interface{} | 参数直接拼接，末尾换行 |
+| ErrorStack | LOG_LEVEL_ERROR | headMsg string | 输出调用栈(ERROR) |
 | Panic | LOG_LEVEL_PANIC | v ...interface{} | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止当前goroutine |
 | Panicf | LOG_LEVEL_PANIC | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，无视服务器模式直接输出日志并终止当前goroutine |
 | Panicln | LOG_LEVEL_PANIC | v ...interface{} | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止当前goroutine |
