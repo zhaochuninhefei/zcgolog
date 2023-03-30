@@ -41,7 +41,7 @@ go env -w GOPRIVATE=gitee.com/zhaochuninhefei/zcgolog
 ## 服务器模式
 如果需要在一个服务中使用zcgolog，并使用其日志级别修改等功能，那么就需要在服务启动时配置并初始化zcgolog，代码示例如下:
 
-```go
+```
 // 该函数在服务启动主函数如main函数中调用即可
 func initZcgolog() {
 	zcgologConf := &log.Config{
@@ -98,11 +98,11 @@ curl "http://localhost:9300/zcgolog/api/level/query?logger=gitee.com/zhaochuninh
 
 zcgolog的在线日志级别调整与查看的HttpAPI列表:
 
-| uri | 用途与URL参数 |
-| --- | --- |
-| /zcgolog/api/level/ctl | 用于在线修改目标函数的日志级别。url参数:logger和level。logger是调整目标，对应具体函数的完整包名路径，如: `gitee.com/zhaochuninhefei/zcgolog/log.writeLog`；level是调整后的日志级别，支持从1到6，分别是DEBUG,INFO,WARNNING,ERROR,PANIC,FATAL。 |
-| /zcgolog/api/level/global | 用于在线修改全局日志级别。URL参数:level,指定全局日志级别 |
-| /zcgolog/api/level/query | 用于查看全局或指定函数的日志级别。URL参数:logger,指定需要查看日志级别的目标函数,不传参数代表查看全局日志级别。 |
+| uri                       | 用途与URL参数                                                                                                                                                                         |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| /zcgolog/api/level/ctl    | 用于在线修改目标函数的日志级别。url参数:logger和level。logger是调整目标，对应具体函数的完整包名路径，如: `gitee.com/zhaochuninhefei/zcgolog/log.writeLog`；level是调整后的日志级别，支持从1到6，分别是DEBUG,INFO,WARNNING,ERROR,PANIC,FATAL。 |
+| /zcgolog/api/level/global | 用于在线修改全局日志级别。URL参数:level,指定全局日志级别                                                                                                                                                |
+| /zcgolog/api/level/query  | 用于查看全局或指定函数的日志级别。URL参数:logger,指定需要查看日志级别的目标函数,不传参数代表查看全局日志级别。                                                                                                                    |
 
 > HttpAPI的host与port根据配置确定，默认是`:9300`，具体配置参见后续的`配置及其默认值`一节。
 
@@ -135,7 +135,7 @@ zcgolog的在线日志级别调整与查看的HttpAPI列表:
 - LogLevelCtlPort ： 日志级别调整监听服务的端口，默认值`9300`。可根据实际情况调整。仅在服务器模式下支持。
 
 ## 支持的日志级别
-```go
+```
 	// debug 调试日志，生产环境通常关闭
 	LOG_LEVEL_DEBUG = 1
 	// info 重要信息日志，用于提示程序过程中的一些重要信息，慎用，避免过多的INFO日志
@@ -152,33 +152,33 @@ zcgolog的在线日志级别调整与查看的HttpAPI列表:
 
 ## 日志输出调用接口
 
-| 函数名 | 日志级别 | 参数列表 | 说明 |
-| --- | --- | --- | --- |
-| Print | LOG_LEVEL_DEBUG | v ...interface{} | Print在zcgolog中处理为与Debug一致 |
-| Printf | LOG_LEVEL_DEBUG | msg string, params ...interface{} | Printf在zcgolog中处理为与Debugf一致 |
-| Println | LOG_LEVEL_DEBUG | v ...interface{} | Println在zcgolog中处理为与Debugln一致 |
-| Debug | LOG_LEVEL_DEBUG | v ...interface{} | 参数直接拼接，末尾换行 |
-| Debugf | LOG_LEVEL_DEBUG | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
-| Debugln | LOG_LEVEL_DEBUG | v ...interface{} | 参数直接拼接，末尾换行 |
-| DebugStack | LOG_LEVEL_DEBUG | headMsg string | 输出调用栈(DEBUG) |
-| Info | LOG_LEVEL_INFO | v ...interface{} | 参数直接拼接，末尾换行 |
-| Infof | LOG_LEVEL_INFO | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
-| Infoln | LOG_LEVEL_INFO | v ...interface{} | 参数直接拼接，末尾换行 |
-| InfoStack | LOG_LEVEL_INFO | headMsg string | 输出调用栈(INFO) |
-| Warn | LOG_LEVEL_WARNING | v ...interface{} | 参数直接拼接，末尾换行 |
-| Warnf | LOG_LEVEL_WARNING | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
-| Warnln | LOG_LEVEL_WARNING | v ...interface{} | 参数直接拼接，末尾换行 |
-| WarnStack | LOG_LEVEL_WARNING | headMsg string | 输出调用栈(WARNING) |
-| Error | LOG_LEVEL_ERROR | v ...interface{} | 参数直接拼接，末尾换行 |
-| Errorf | LOG_LEVEL_ERROR | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行 |
-| Errorln | LOG_LEVEL_ERROR | v ...interface{} | 参数直接拼接，末尾换行 |
-| ErrorStack | LOG_LEVEL_ERROR | headMsg string | 输出调用栈(ERROR) |
-| Panic | LOG_LEVEL_PANIC | v ...interface{} | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止当前goroutine |
-| Panicf | LOG_LEVEL_PANIC | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，无视服务器模式直接输出日志并终止当前goroutine |
-| Panicln | LOG_LEVEL_PANIC | v ...interface{} | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止当前goroutine |
-| Fatal | LOG_LEVEL_FATAL | v ...interface{} | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止程序 |
-| Fatalf | LOG_LEVEL_FATAL | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，无视服务器模式直接输出日志并终止程序 |
-| Fatalln | LOG_LEVEL_FATAL | v ...interface{} | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止程序 |
+| 函数名        | 日志级别              | 参数列表                              | 说明                                                 |
+|------------|-------------------|-----------------------------------|----------------------------------------------------|
+| Print      | LOG_LEVEL_DEBUG   | v ...interface{}                  | Print在zcgolog中处理为与Debug一致                          |
+| Printf     | LOG_LEVEL_DEBUG   | msg string, params ...interface{} | Printf在zcgolog中处理为与Debugf一致                        |
+| Println    | LOG_LEVEL_DEBUG   | v ...interface{}                  | Println在zcgolog中处理为与Debugln一致                      |
+| Debug      | LOG_LEVEL_DEBUG   | v ...interface{}                  | 参数直接拼接，末尾换行                                        |
+| Debugf     | LOG_LEVEL_DEBUG   | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行                        |
+| Debugln    | LOG_LEVEL_DEBUG   | v ...interface{}                  | 参数直接拼接，末尾换行                                        |
+| DebugStack | LOG_LEVEL_DEBUG   | headMsg string                    | 输出调用栈(DEBUG)                                       |
+| Info       | LOG_LEVEL_INFO    | v ...interface{}                  | 参数直接拼接，末尾换行                                        |
+| Infof      | LOG_LEVEL_INFO    | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行                        |
+| Infoln     | LOG_LEVEL_INFO    | v ...interface{}                  | 参数直接拼接，末尾换行                                        |
+| InfoStack  | LOG_LEVEL_INFO    | headMsg string                    | 输出调用栈(INFO)                                        |
+| Warn       | LOG_LEVEL_WARNING | v ...interface{}                  | 参数直接拼接，末尾换行                                        |
+| Warnf      | LOG_LEVEL_WARNING | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行                        |
+| Warnln     | LOG_LEVEL_WARNING | v ...interface{}                  | 参数直接拼接，末尾换行                                        |
+| WarnStack  | LOG_LEVEL_WARNING | headMsg string                    | 输出调用栈(WARNING)                                     |
+| Error      | LOG_LEVEL_ERROR   | v ...interface{}                  | 参数直接拼接，末尾换行                                        |
+| Errorf     | LOG_LEVEL_ERROR   | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，末尾换行                        |
+| Errorln    | LOG_LEVEL_ERROR   | v ...interface{}                  | 参数直接拼接，末尾换行                                        |
+| ErrorStack | LOG_LEVEL_ERROR   | headMsg string                    | 输出调用栈(ERROR)                                       |
+| Panic      | LOG_LEVEL_PANIC   | v ...interface{}                  | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止当前goroutine         |
+| Panicf     | LOG_LEVEL_PANIC   | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，无视服务器模式直接输出日志并终止当前goroutine |
+| Panicln    | LOG_LEVEL_PANIC   | v ...interface{}                  | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止当前goroutine         |
+| Fatal      | LOG_LEVEL_FATAL   | v ...interface{}                  | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止程序                  |
+| Fatalf     | LOG_LEVEL_FATAL   | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，无视服务器模式直接输出日志并终止程序          |
+| Fatalln    | LOG_LEVEL_FATAL   | v ...interface{}                  | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止程序                  |
 
 
 # zcgolog性能基准测试
