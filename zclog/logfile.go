@@ -16,7 +16,6 @@ zclog/logfile.go 日志文件相关处理
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"strconv"
@@ -30,11 +29,12 @@ const (
 )
 
 // GetLogFilePathAndYMDToday 获取日志文件路径和当天年月日。
-//  不存在当天对应日志文件时，创建新的日志文件；
-//  存在当天对应日志文件时，获取最新的日志文件；
-//  最新日志文件大小超过配置的日志文件大小上限时，创建新的日志文件。
-//  每天的日志文件数量不能超过99999，否则会报错。
-//  本地模式下，如果LogFileDir为空，则返回 ("OS.STDOUT", 当天日期, nil)表示只能输出到控制台。
+//
+//	不存在当天对应日志文件时，创建新的日志文件；
+//	存在当天对应日志文件时，获取最新的日志文件；
+//	最新日志文件大小超过配置的日志文件大小上限时，创建新的日志文件。
+//	每天的日志文件数量不能超过99999，否则会报错。
+//	本地模式下，如果LogFileDir为空，则返回 ("OS.STDOUT", 当天日期, nil)表示只能输出到控制台。
 func GetLogFilePathAndYMDToday(logConfig *Config) (string, string, error) {
 	// 检查日志配置
 	res, err := CheckConfig(logConfig)
@@ -48,7 +48,7 @@ func GetLogFilePathAndYMDToday(logConfig *Config) (string, string, error) {
 	// 防止日志文件目录尚未创建
 	_ = os.MkdirAll(logConfig.LogFileDir, os.ModePerm)
 	// 读取日志目录下所有文件
-	files, err := ioutil.ReadDir(logConfig.LogFileDir)
+	files, err := os.ReadDir(logConfig.LogFileDir)
 	if err != nil {
 		return "", "", err
 	}
@@ -99,7 +99,7 @@ func GetLogFilePathAndYMDToday(logConfig *Config) (string, string, error) {
 	}
 	targetFileName := prefix + numberToday + ".log"
 	targetFilePath := path.Join(logConfig.LogFileDir, targetFileName)
-	err = ioutil.WriteFile(targetFilePath, []byte{}, 0644)
+	err = os.WriteFile(targetFilePath, []byte{}, 0644)
 	if err != nil {
 		return "", ymdToday, err
 	}
@@ -113,7 +113,8 @@ func getYMDToday() string {
 }
 
 // 当天日志序列号+1
-//  不能超过99999，否则报错
+//
+//	不能超过99999，否则报错
 func nextNumberToday(maxNumber int) (string, error) {
 	number := maxNumber + 1
 	if number > 99999 {
@@ -123,7 +124,7 @@ func nextNumberToday(maxNumber int) (string, error) {
 }
 
 func ClearDir(dirPath string) error {
-	files, err := ioutil.ReadDir(dirPath)
+	files, err := os.ReadDir(dirPath)
 	if err != nil {
 		return err
 	}
