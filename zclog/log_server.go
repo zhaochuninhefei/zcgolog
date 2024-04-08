@@ -23,6 +23,7 @@ import (
 )
 
 // 日志缓冲通道填满后处理策略定义
+//
 //goland:noinspection GoSnakeCaseUsage
 const (
 	// LOG_CHN_OVER_POLICY_DISCARD 丢弃该条日志
@@ -72,7 +73,8 @@ func startZcgologServer() {
 }
 
 // QuitMsgReader 停止对缓冲消息通道的监听
-//  timeoutMilliSec 超时时间(毫秒),该值<=0时表示会一直等待直到监听停止。
+//
+//	timeoutMilliSec 超时时间(毫秒),该值<=0时表示会一直等待直到监听停止。
 func QuitMsgReader(timeoutMilliSec int) error {
 	if !msgReaderRunning {
 		return nil
@@ -96,7 +98,8 @@ func QuitMsgReader(timeoutMilliSec int) error {
 }
 
 // 等待日志缓冲通道监听启动
-//  timeoutMilliSec 超时时间(毫秒),该值<=0时表示会一直等待直到监听启动。
+//
+//	timeoutMilliSec 超时时间(毫秒),该值<=0时表示会一直等待直到监听启动。
 func waitMsgReaderStart(timeoutMilliSec int) error {
 	startTime := time.Now()
 	for {
@@ -204,5 +207,7 @@ func pushMsgToLogMsgChn(pushMsg logMsg) {
 			return
 		}
 		// TODO 考虑是否添加新的策略，比如将日志直接输出到fallback的输出流?
+	default:
+		panic("unhandled default case")
 	}
 }
