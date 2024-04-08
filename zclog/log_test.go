@@ -12,7 +12,7 @@ package zclog
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"testing"
 	"time"
@@ -123,7 +123,7 @@ func changeLogLevel(uri string) {
 	if err != nil {
 		fmt.Printf("请求 %s 返回错误: %s\n", uri, err)
 	} else {
-		response, _ := ioutil.ReadAll(resp.Body)
+		response, _ := io.ReadAll(resp.Body)
 		fmt.Printf("请求 %s 返回: %s\n", uri, response)
 		// 查看当前日志级别
 		showLogLevelNow()
@@ -136,7 +136,7 @@ func showLogLevelNow() {
 	if err != nil {
 		fmt.Printf("请求 %s 返回错误: %s\n", log_ctl_uri_level_query, err)
 	} else {
-		response, _ := ioutil.ReadAll(resp.Body)
+		response, _ := io.ReadAll(resp.Body)
 		fmt.Printf("===== 当前全局日志级别: %s\n", response)
 	}
 	// 查看指定logger的日志级别
@@ -144,7 +144,7 @@ func showLogLevelNow() {
 	if err != nil {
 		fmt.Printf("请求 %s 返回错误: %s\n", log_ctl_uri_level_query_logger, err)
 	} else {
-		response, _ := ioutil.ReadAll(resp.Body)
+		response, _ := io.ReadAll(resp.Body)
 		fmt.Printf("===== 当前指定logger日志级别: %s\n", response)
 	}
 }
