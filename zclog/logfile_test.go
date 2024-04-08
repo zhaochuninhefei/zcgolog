@@ -25,11 +25,11 @@ func TestFirstLog(t *testing.T) {
 		t.Fatal(err)
 	}
 	fmt.Printf("logFileName: %s\n", logFileName)
-	os.Remove(logFileName)
+	_ = os.Remove(logFileName)
 }
 
 func TestLastLog(t *testing.T) {
-	ClearDir("testdata/lastlog")
+	_ = ClearDir("testdata/lastlog")
 	ymdToday := getYMDToday()
 	log1 := "testdata/lastlog/zcgolog_" + ymdToday + "_00001.log"
 	for i := 0; i < 100; i++ {
@@ -54,7 +54,7 @@ func TestLastLog(t *testing.T) {
 	}
 	writeTestLog(logFileName, "测试消息测试消息测试消息测试消息测试消息测试消息测试消息测试消息测试消息测试消息测试消息")
 	fmt.Printf("logFileName: %s\n", logFileName)
-	ClearDir("testdata/lastlog")
+	_ = ClearDir("testdata/lastlog")
 }
 
 func TestGetYMDToday(t *testing.T) {
@@ -67,7 +67,9 @@ func writeTestLog(logFilePath string, msg string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer logFile.Close()
+	defer func(logFile *os.File) {
+		_ = logFile.Close()
+	}(logFile)
 	log.SetOutput(logFile)
 	log.Printf(msg + "\n")
 }
