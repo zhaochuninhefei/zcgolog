@@ -23,6 +23,7 @@ import (
 )
 
 // 日志模式定义
+//
 //goland:noinspection GoSnakeCaseUsage
 const (
 	// LOG_MODE_LOCAL 本地模式: 日志同步输出且不支持在线修改指定logger的日志级别，日志文件不支持自动滚动，通常仅用于测试
@@ -140,6 +141,8 @@ func InitLogger(initConfig *Config) {
 	case LOG_MODE_LOCAL:
 		// 初始化zcgoLogger
 		initZcgoLogger()
+	default:
+		panic("unhandled default case")
 	}
 }
 
@@ -194,5 +197,7 @@ func outputLog(msgLogLevel int, msg string, params ...interface{}) {
 		// 本地日志模式下，直接输出日志
 		msgPrefix := fmt.Sprintf("%s 代码:%s %d 函数:%s ", LogLevels[msgLogLevel], file, line, myFunc)
 		zcgoLogger.Printf(msgPrefix+msg, params...)
+	default:
+		panic("unhandled default case")
 	}
 }
