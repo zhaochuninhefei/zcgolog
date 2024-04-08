@@ -25,6 +25,7 @@ import (
 	"strings"
 )
 
+//goland:noinspection GoSnakeCaseUsage
 const (
 	LOG_TIME_FORMAT_YMDHMS        = "2006-01-02 15:04:05"
 	CONFIG_CHECK_RESULT_NG        = -1
@@ -32,12 +33,14 @@ const (
 	CONFIG_CHECK_RESULT_NOFILEDIR = 2
 )
 
-// 获取当前用户Home目录
+// Home 获取当前用户Home目录
+//
+//goland:noinspection GoUnusedExportedFunction
 func Home() (string, error) {
 	// 优先使用当前系统用户的Home目录
-	user, err := user.Current()
+	curUser, err := user.Current()
 	if nil == err {
-		return user.HomeDir, nil
+		return curUser.HomeDir, nil
 	}
 	// 判断操作系统是否windows
 	if runtime.GOOS == "windows" {
@@ -76,10 +79,11 @@ func homeWindows() (string, error) {
 	return home, nil
 }
 
-// 检查日志配置
-//  返回 1 代表检查OK, error为nil;
-//  返回 2 代表检查OK但LogFileDir为空，error为nil;
-//  返回 -9 代表检查失败，error非nil;
+// CheckConfig 检查日志配置
+//
+//	返回 1 代表检查OK, error为nil;
+//	返回 2 代表检查OK但LogFileDir为空，error为nil;
+//	返回 -9 代表检查失败，error非nil;
 func CheckConfig(logConfig *Config) (int, error) {
 	if logConfig == nil {
 		return CONFIG_CHECK_RESULT_NG, fmt.Errorf("日志配置不可为空")
