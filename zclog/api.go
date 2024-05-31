@@ -400,6 +400,30 @@ func Panicln(v ...interface{}) {
 	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
+// PanicWithCallerDepth 直接输出日志，终止当前goroutine
+//
+//goland:noinspection GoUnusedExportedFunction
+func PanicWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_PANIC
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
+
+// PanicfWithCallerDepth 直接输出日志，终止当前goroutine
+//
+//goland:noinspection GoUnusedExportedFunction
+func PanicfWithCallerDepth(callerDepth int, msg string, params ...interface{}) {
+	msgLogLevel := LOG_LEVEL_PANIC
+	outputLog(msgLogLevel, msg, callerDepth, params...)
+}
+
+// PaniclnWithCallerDepth 直接输出日志，终止当前goroutine
+//
+//goland:noinspection GoUnusedExportedFunction
+func PaniclnWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_PANIC
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
+
 // Fatal 直接输出日志，终止程序
 //
 //goland:noinspection GoUnusedExportedFunction
