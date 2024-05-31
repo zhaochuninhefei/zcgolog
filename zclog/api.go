@@ -447,3 +447,27 @@ func Fatalln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_FATAL
 	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
+
+// FatalWithCallerDepth 直接输出日志，终止程序
+//
+//goland:noinspection GoUnusedExportedFunction
+func FatalWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_FATAL
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
+
+// FatalfWithCallerDepth 直接输出日志，终止程序
+//
+//goland:noinspection GoUnusedExportedFunction
+func FatalfWithCallerDepth(callerDepth int, msg string, params ...interface{}) {
+	msgLogLevel := LOG_LEVEL_FATAL
+	outputLog(msgLogLevel, msg, callerDepth, params...)
+}
+
+// FatallnWithCallerDepth 直接输出日志，终止程序
+//
+//goland:noinspection GoUnusedExportedFunction
+func FatallnWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_FATAL
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
