@@ -303,6 +303,11 @@ func caller1(msg string) {
 	DebugWithCallerDepth(3, msg)
 	DebugfWithCallerDepth(4, msg)
 	DebugStackWithCallerDepth(3, msg)
+
+	InfolnWithCallerDepth(2, msg)
+	InfoWithCallerDepth(3, msg)
+	InfofWithCallerDepth(4, msg)
+	InfoStackWithCallerDepth(3, msg)
 }
 
 func caller2(msg string) {

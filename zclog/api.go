@@ -176,6 +176,46 @@ func InfoStack(headMsg string) {
 	outputLog(msgLogLevel, msgBuilder.String(), CALLER_DEPTH_DEFAULT)
 }
 
+// InfoWithCallerDepth 输出Info日志
+func InfoWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_INFO
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
+
+// InfofWithCallerDepth 输出Info日志
+func InfofWithCallerDepth(callerDepth int, msg string, params ...interface{}) {
+	msgLogLevel := LOG_LEVEL_INFO
+	outputLog(msgLogLevel, msg, callerDepth, params...)
+}
+
+// InfolnWithCallerDepth 输出Info日志
+func InfolnWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_INFO
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
+
+// InfoStackWithCallerDepth 输出调用栈(INFO)
+func InfoStackWithCallerDepth(callerDepth int, headMsg string) {
+	msgLogLevel := LOG_LEVEL_INFO
+	var pcs [32]uintptr
+	n := runtime.Callers(callerDepth, pcs[:]) // skip first 3 frames
+	frames := runtime.CallersFrames(pcs[:n])
+	var msgBuilder strings.Builder
+	if headMsg != "" {
+		msgBuilder.WriteString(headMsg)
+		msgBuilder.WriteString("\n")
+	}
+	msgBuilder.WriteString("当前调用栈如下:\n")
+	for {
+		frame, more := frames.Next()
+		msgBuilder.WriteString(fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function))
+		if !more {
+			break
+		}
+	}
+	outputLog(msgLogLevel, msgBuilder.String(), callerDepth)
+}
+
 // Warn 输出Warn日志
 func Warn(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_WARNING
