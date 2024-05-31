@@ -180,6 +180,10 @@ zcgolog的在线日志级别调整与查看的HttpAPI列表:
 | Fatalf     | LOG_LEVEL_FATAL   | msg string, params ...interface{} | 参数按照msg中的format定义格式化拼接，无视服务器模式直接输出日志并终止程序          |
 | Fatalln    | LOG_LEVEL_FATAL   | v ...interface{}                  | 参数直接拼接，并输出堆栈信息，无视服务器模式直接输出日志并终止程序                  |
 
+> 2024/05/31 追加: 每个函数都追加了对应的`XxxWithCallerDepth`新函数，并需要传入 callerDepth 指定调用栈深度。
+> 使用原来的函数时，默认调用栈深度为2，即打印调用方信息时，从当前输入日志的函数向上逆推2层。
+> 默认逆推2层的原因是，zclog的这些接口函数会在内部调用函数`outputLog`，获取运行时调用栈的位置是在`outputLog`函数里。
+> 逆推2层的运行时位置就是调用zclog接口函数的位置。
 
 # zcgolog性能基准测试
 针对zcgolog的服务器模式，本地模式，以及golang原生`log`包做了性能基准测试。代码:`benchtest/log_benchmark_test.go`
