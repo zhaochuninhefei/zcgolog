@@ -147,9 +147,13 @@ func InitLogger(initConfig *Config) {
 }
 
 // 输出日志
-func outputLog(msgLogLevel int, msg string, params ...interface{}) {
+func outputLog(msgLogLevel int, msg string, callerDepth int, params ...interface{}) {
+	// 调用者深度，默认为2
+	if callerDepth == 0 {
+		callerDepth = CALLER_DEPTH_DEFAULT
+	}
 	// 获取日志接口调用方的程序计数器，文件名以及行号
-	pc, file, line, _ := runtime.Caller(2)
+	pc, file, line, _ := runtime.Caller(callerDepth)
 	// 调用处函数包路径
 	myFunc := runtime.FuncForPC(pc).Name()
 	// Panic与Fatal直接调用log包处理

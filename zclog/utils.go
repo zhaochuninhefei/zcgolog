@@ -31,6 +31,7 @@ const (
 	CONFIG_CHECK_RESULT_NG        = -1
 	CONFIG_CHECK_RESULT_OK        = 1
 	CONFIG_CHECK_RESULT_NOFILEDIR = 2
+	CALLER_DEPTH_DEFAULT          = 2
 )
 
 // Home 获取当前用户Home目录

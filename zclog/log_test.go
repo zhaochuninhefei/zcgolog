@@ -282,3 +282,30 @@ func TestLogLevel(t *testing.T) {
 	}
 	fmt.Println("critical获取到日志级别:", logLevel)
 }
+
+func TestCallerDepthMorethen2(t *testing.T) {
+	fmt.Println("----- TestCallerDepthMorethen2 -----")
+	logConfig := &Config{
+		LogFileDir:        "testdata/locallogs",
+		LogFileNamePrefix: "TestCallerDepthMorethen2",
+		LogLevelGlobal:    LOG_LEVEL_DEBUG,
+	}
+	InitLogger(logConfig)
+	caller4("test message")
+}
+
+func caller1(msg string, params ...interface{}) {
+	PrintlnWithCallerDepth(3, msg)
+}
+
+func caller2(msg string) {
+	caller1(msg)
+}
+
+func caller3(msg string) {
+	caller2(msg)
+}
+
+func caller4(msg string) {
+	caller3(msg)
+}

@@ -17,3 +17,4 @@
 .idea/
 benchtest/testdata/*
 /zclog/testdata/serverlogs/*
+/zclog/testdata/locallogs/*

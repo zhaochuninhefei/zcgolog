@@ -23,37 +23,55 @@ import (
 // Print 日志级别: DEBUG
 func Print(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_DEBUG
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // Printf 日志级别: DEBUG
 func Printf(msg string, params ...interface{}) {
 	msgLogLevel := LOG_LEVEL_DEBUG
-	outputLog(msgLogLevel, msg, params...)
+	outputLog(msgLogLevel, msg, CALLER_DEPTH_DEFAULT, params...)
 }
 
 // Println 日志级别: DEBUG
 func Println(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_DEBUG
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
+}
+
+// PrintWithCallerDepth 日志级别: DEBUG
+func PrintWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_DEBUG
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
+
+// PrintfWithCallerDepth 日志级别: DEBUG
+func PrintfWithCallerDepth(callerDepth int, msg string, params ...interface{}) {
+	msgLogLevel := LOG_LEVEL_DEBUG
+	outputLog(msgLogLevel, msg, callerDepth, params...)
+}
+
+// PrintlnWithCallerDepth 日志级别: DEBUG
+func PrintlnWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_DEBUG
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
 }
 
 // Debug 输出Debug日志
 func Debug(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_DEBUG
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // Debugf 输出Debug日志
 func Debugf(msg string, params ...interface{}) {
 	msgLogLevel := LOG_LEVEL_DEBUG
-	outputLog(msgLogLevel, msg, params...)
+	outputLog(msgLogLevel, msg, CALLER_DEPTH_DEFAULT, params...)
 }
 
 // Debugln 输出Debug日志
 func Debugln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_DEBUG
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // DebugStack 输出调用栈(DEBUG)
@@ -75,25 +93,25 @@ func DebugStack(headMsg string) {
 			break
 		}
 	}
-	outputLog(msgLogLevel, msgBuilder.String())
+	outputLog(msgLogLevel, msgBuilder.String(), CALLER_DEPTH_DEFAULT)
 }
 
 // Info 输出Info日志
 func Info(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_INFO
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // Infof 输出Info日志
 func Infof(msg string, params ...interface{}) {
 	msgLogLevel := LOG_LEVEL_INFO
-	outputLog(msgLogLevel, msg, params...)
+	outputLog(msgLogLevel, msg, CALLER_DEPTH_DEFAULT, params...)
 }
 
 // Infoln 输出Info日志
 func Infoln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_INFO
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // InfoStack 输出调用栈(INFO)
@@ -115,25 +133,25 @@ func InfoStack(headMsg string) {
 			break
 		}
 	}
-	outputLog(msgLogLevel, msgBuilder.String())
+	outputLog(msgLogLevel, msgBuilder.String(), CALLER_DEPTH_DEFAULT)
 }
 
 // Warn 输出Warn日志
 func Warn(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_WARNING
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // Warnf 输出Warn日志
 func Warnf(msg string, params ...interface{}) {
 	msgLogLevel := LOG_LEVEL_WARNING
-	outputLog(msgLogLevel, msg, params...)
+	outputLog(msgLogLevel, msg, CALLER_DEPTH_DEFAULT, params...)
 }
 
 // Warnln 输出Warn日志
 func Warnln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_WARNING
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // WarnStack 输出调用栈(WARNING)
@@ -155,25 +173,25 @@ func WarnStack(headMsg string) {
 			break
 		}
 	}
-	outputLog(msgLogLevel, msgBuilder.String())
+	outputLog(msgLogLevel, msgBuilder.String(), CALLER_DEPTH_DEFAULT)
 }
 
 // Error 输出Error日志
 func Error(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_ERROR
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // Errorf 输出Error日志
 func Errorf(msg string, params ...interface{}) {
 	msgLogLevel := LOG_LEVEL_ERROR
-	outputLog(msgLogLevel, msg, params...)
+	outputLog(msgLogLevel, msg, CALLER_DEPTH_DEFAULT, params...)
 }
 
 // Errorln 输出Error日志
 func Errorln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_ERROR
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // ErrorStack 输出调用栈(ERROR)
@@ -195,47 +213,53 @@ func ErrorStack(headMsg string) {
 			break
 		}
 	}
-	outputLog(msgLogLevel, msgBuilder.String())
+	outputLog(msgLogLevel, msgBuilder.String(), CALLER_DEPTH_DEFAULT)
 }
 
 // Panic 直接输出日志，终止当前goroutine
+//
 //goland:noinspection GoUnusedExportedFunction
 func Panic(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_PANIC
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // Panicf 直接输出日志，终止当前goroutine
+//
 //goland:noinspection GoUnusedExportedFunction
 func Panicf(msg string, params ...interface{}) {
 	msgLogLevel := LOG_LEVEL_PANIC
-	outputLog(msgLogLevel, msg, params...)
+	outputLog(msgLogLevel, msg, CALLER_DEPTH_DEFAULT, params...)
 }
 
 // Panicln 直接输出日志，终止当前goroutine
+//
 //goland:noinspection GoUnusedExportedFunction
 func Panicln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_PANIC
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // Fatal 直接输出日志，终止程序
+//
 //goland:noinspection GoUnusedExportedFunction
 func Fatal(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_FATAL
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
 
 // Fatalf 直接输出日志，终止程序
+//
 //goland:noinspection GoUnusedExportedFunction
 func Fatalf(msg string, params ...interface{}) {
 	msgLogLevel := LOG_LEVEL_FATAL
-	outputLog(msgLogLevel, msg, params...)
+	outputLog(msgLogLevel, msg, CALLER_DEPTH_DEFAULT, params...)
 }
 
 // Fatalln 直接输出日志，终止程序
+//
 //goland:noinspection GoUnusedExportedFunction
 func Fatalln(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_FATAL
-	outputLog(msgLogLevel, fmt.Sprint(v...))
+	outputLog(msgLogLevel, fmt.Sprint(v...), CALLER_DEPTH_DEFAULT)
 }
