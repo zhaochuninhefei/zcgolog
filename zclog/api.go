@@ -96,6 +96,46 @@ func DebugStack(headMsg string) {
 	outputLog(msgLogLevel, msgBuilder.String(), CALLER_DEPTH_DEFAULT)
 }
 
+// DebugWithCallerDepth 输出Debug日志
+func DebugWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_DEBUG
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
+
+// DebugfWithCallerDepth 输出Debug日志
+func DebugfWithCallerDepth(callerDepth int, msg string, params ...interface{}) {
+	msgLogLevel := LOG_LEVEL_DEBUG
+	outputLog(msgLogLevel, msg, callerDepth, params...)
+}
+
+// DebuglnWithCallerDepth 输出Debug日志
+func DebuglnWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_DEBUG
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
+
+// DebugStackWithCallerDepth 输出调用栈(DEBUG)
+func DebugStackWithCallerDepth(callerDepth int, headMsg string) {
+	msgLogLevel := LOG_LEVEL_DEBUG
+	var pcs [32]uintptr
+	n := runtime.Callers(callerDepth, pcs[:]) // skip first 3 frames
+	frames := runtime.CallersFrames(pcs[:n])
+	var msgBuilder strings.Builder
+	if headMsg != "" {
+		msgBuilder.WriteString(headMsg)
+		msgBuilder.WriteString("\n")
+	}
+	msgBuilder.WriteString("当前调用栈如下:\n")
+	for {
+		frame, more := frames.Next()
+		msgBuilder.WriteString(fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function))
+		if !more {
+			break
+		}
+	}
+	outputLog(msgLogLevel, msgBuilder.String(), callerDepth)
+}
+
 // Info 输出Info日志
 func Info(v ...interface{}) {
 	msgLogLevel := LOG_LEVEL_INFO

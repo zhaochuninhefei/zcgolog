@@ -294,8 +294,15 @@ func TestCallerDepthMorethen2(t *testing.T) {
 	caller4("test message")
 }
 
-func caller1(msg string, params ...interface{}) {
-	PrintlnWithCallerDepth(3, msg)
+func caller1(msg string) {
+	PrintlnWithCallerDepth(2, msg)
+	PrintWithCallerDepth(3, msg)
+	PrintfWithCallerDepth(4, msg)
+
+	DebuglnWithCallerDepth(2, msg)
+	DebugWithCallerDepth(3, msg)
+	DebugfWithCallerDepth(4, msg)
+	DebugStackWithCallerDepth(3, msg)
 }
 
 func caller2(msg string) {
