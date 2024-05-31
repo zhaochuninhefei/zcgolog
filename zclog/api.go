@@ -336,6 +336,46 @@ func ErrorStack(headMsg string) {
 	outputLog(msgLogLevel, msgBuilder.String(), CALLER_DEPTH_DEFAULT)
 }
 
+// ErrorWithCallerDepth 输出Error日志
+func ErrorWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_ERROR
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
+
+// ErrorfWithCallerDepth 输出Error日志
+func ErrorfWithCallerDepth(callerDepth int, msg string, params ...interface{}) {
+	msgLogLevel := LOG_LEVEL_ERROR
+	outputLog(msgLogLevel, msg, callerDepth, params...)
+}
+
+// ErrorlnWithCallerDepth 输出Error日志
+func ErrorlnWithCallerDepth(callerDepth int, v ...interface{}) {
+	msgLogLevel := LOG_LEVEL_ERROR
+	outputLog(msgLogLevel, fmt.Sprint(v...), callerDepth)
+}
+
+// ErrorStackWithCallerDepth 输出调用栈(ERROR)
+func ErrorStackWithCallerDepth(callerDepth int, headMsg string) {
+	msgLogLevel := LOG_LEVEL_ERROR
+	var pcs [32]uintptr
+	n := runtime.Callers(callerDepth, pcs[:]) // skip first 3 frames
+	frames := runtime.CallersFrames(pcs[:n])
+	var msgBuilder strings.Builder
+	if headMsg != "" {
+		msgBuilder.WriteString(headMsg)
+		msgBuilder.WriteString("\n")
+	}
+	msgBuilder.WriteString("当前调用栈如下:\n")
+	for {
+		frame, more := frames.Next()
+		msgBuilder.WriteString(fmt.Sprintf("%s:%d %s\n", frame.File, frame.Line, frame.Function))
+		if !more {
+			break
+		}
+	}
+	outputLog(msgLogLevel, msgBuilder.String(), callerDepth)
+}
+
 // Panic 直接输出日志，终止当前goroutine
 //
 //goland:noinspection GoUnusedExportedFunction

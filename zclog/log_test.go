@@ -313,6 +313,11 @@ func caller1(msg string) {
 	WarnWithCallerDepth(3, msg)
 	WarnfWithCallerDepth(4, msg)
 	WarnStackWithCallerDepth(3, msg)
+
+	ErrorlnWithCallerDepth(2, msg)
+	ErrorWithCallerDepth(3, msg)
+	ErrorfWithCallerDepth(4, msg)
+	ErrorStackWithCallerDepth(3, msg)
 }
 
 func caller2(msg string) {
