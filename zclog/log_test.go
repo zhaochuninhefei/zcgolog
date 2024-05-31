@@ -308,6 +308,11 @@ func caller1(msg string) {
 	InfoWithCallerDepth(3, msg)
 	InfofWithCallerDepth(4, msg)
 	InfoStackWithCallerDepth(3, msg)
+
+	WarnlnWithCallerDepth(2, msg)
+	WarnWithCallerDepth(3, msg)
+	WarnfWithCallerDepth(4, msg)
+	WarnStackWithCallerDepth(3, msg)
 }
 
 func caller2(msg string) {
